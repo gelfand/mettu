@@ -18,7 +18,7 @@ type Token struct {
 
 func main() {
 	ctx := context.Background()
-	db, err := repo.NewKvDB("./datadir")
+	db, err := repo.NewDB()
 	if err != nil {
 		log.Fatal(err)
 	}

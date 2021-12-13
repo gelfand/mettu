@@ -1,11 +1,13 @@
 package repo
 
 import (
+	"testing"
+
 	"github.com/ledgerwatch/erigon-lib/kv"
 	"github.com/ledgerwatch/erigon-lib/kv/mdbx"
 )
 
-func newTestDB() kv.RwDB {
+func newTestDBInMem() kv.RwDB {
 	db, err := mdbx.NewMDBX(nil).WithTablessCfg(
 		func(defaultBuckets kv.TableCfg) kv.TableCfg {
 			return kvTablesCfg
@@ -15,5 +17,16 @@ func newTestDB() kv.RwDB {
 		panic(err)
 	}
 
+	return db
+}
+
+func newTestDB(t *testing.T) kv.RwDB {
+	db, err := mdbx.NewMDBX(nil).Path(t.TempDir()).WithTablessCfg(
+		func(defaultBuckets kv.TableCfg) kv.TableCfg {
+			return kvTablesCfg
+		}).Open()
+	if err != nil {
+		panic(err)
+	}
 	return db
 }

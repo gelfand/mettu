@@ -2,7 +2,7 @@ package repo
 
 import (
 	"context"
-	"fmt"
+	"math/big"
 	"reflect"
 	"testing"
 
@@ -26,6 +26,12 @@ func testDB_PutToken(t *testing.T, db *DB, token Token, wantErr bool) {
 }
 
 func TestDB_PutPeekToken(t *testing.T) {
+	t.Parallel()
+
+	bigNumber := big.NewInt(0)
+	bigNumber, _ = bigNumber.SetString("115792089237316195423570985008687907853269984665640564039457584007913129639936", 10)
+	hugeNumber := new(big.Int).Mul(bigNumber, big.NewInt(128))
+
 	type fields struct {
 		d kv.RwDB
 	}
@@ -42,21 +48,26 @@ func TestDB_PutPeekToken(t *testing.T) {
 	}{
 		{
 			name:   "",
-			fields: fields{newTestDB()},
+			fields: fields{newTestDB(t)},
 			args: args{
 				addr: common.HexToAddress("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"),
 			},
 			want: Token{
-				Symbol:    "WETH",
-				Decimals:  18,
-				Purchases: 255,
-				Address:   common.HexToAddress("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"),
+				Address:     common.HexToAddress("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"),
+				Symbol:      "WETH",
+				Decimals:    big.NewInt(18),
+				TimesBought: 25,
+				TotalBought: hugeNumber,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
+
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			db := &DB{
 				d: tt.fields.d,
 			}
@@ -76,7 +87,8 @@ func TestDB_PutPeekToken(t *testing.T) {
 				return
 			}
 
-			fmt.Println(got)
+			t.Logf("%+v\n", got)
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DB.PeekToken() = %v, want %v", got, tt.want)
 			}
