@@ -4,6 +4,8 @@ go 1.17
 
 require (
 	github.com/ethereum/go-ethereum v1.10.13
+	github.com/gelfand/log v0.0.0-20211212114338-f088eb233ff6
+	github.com/google/go-cmp v0.5.7-0.20211207210118-3242228551a7
 	github.com/jackc/pgx/v4 v4.14.1
 	github.com/ledgerwatch/erigon-lib v0.0.0-20211206140018-b06f3cec6bfb
 	github.com/ugorji/go/codec v1.1.13
@@ -39,6 +41,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/sys v0.0.0-20211030160813-b3129d9d1021 // indirect
 	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )

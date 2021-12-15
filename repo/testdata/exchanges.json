@@ -1,0 +1,106 @@
+[
+    {
+        "Name": "Kraken",
+        "Address": "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0"
+    },
+    {
+        "Name": "Hotbit",
+        "Address": "0x562680a4dc50ed2f14d75bf31f494cfe0b8d10a1"
+    },
+    {
+        "Name": "Binance",
+        "Address": "0x28c6c06298d514db089934071355e5743bf21d60"
+    },
+    {
+        "Name": "FTX",
+        "Address": "0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2"
+    },
+    {
+        "Name": "Coinbase",
+        "Address": "0x3cd751e6b0078be393132286c442345e5dc49699"
+    },
+    {
+        "Name": "Coinbase",
+        "Address": "0x1dbb3eb481eff678092b36c6f895d7f907bb5850"
+    },
+    {
+        "Name": "FTX",
+        "Address": "0xc098b2a3aa256d2140208c3de6543aaef5cd3a94"
+    },
+    {
+        "Name": "Gemini",
+        "Address": "0xd24400ae8bfebb18ca49be86258a3c749cf46853"
+    },
+    {
+        "Name": "Bitrrex",
+        "Address": "0xfbb1b73c4f0bda4f67dca266ce6ef42f520fbb98"
+    },
+    {
+        "Name": "Okex",
+        "Address": "0xa7efae728d2936e78bda97dc267687568dd593f3"
+    },
+    {
+        "Name": "Binance",
+        "Address": "0x56eddb7aa87536c09ccc2793473599fd21a8b17f"
+    },
+    {
+        "Name": "Huobi",
+        "Address": "0x73f8fc2e74302eb2efda125a326655acf0dc2d1b"
+    },
+    {
+        "Name": "Kucoin",
+        "Address": "0x4ad64983349c49defe8d7a4686202d24b25d0ce8"
+    },
+    {
+        "Name": "Poloniex",
+        "Address": "0xa910f92acdaf488fa6ef02174fb86208ad7722ba"
+    },
+    {
+        "Name": "Huobi",
+        "Address": "0x0577a79cfc63bbc0df38833ff4c4a3bf2095b404"
+    },
+    {
+        "Name": "Huobi",
+        "Address": "0x28ffe35688ffffd0659aee2e34778b0ae4e193ad"
+    },
+    {
+        "Name": "Coinbase",
+        "Address": "0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511"
+    },
+    {
+        "Name": "Coinbase",
+        "Address": "0xeb2629a2734e272bcc07bda959863f316f4bd4cf"
+    },
+    {
+        "Name": "Coinbase",
+        "Address": "0xddfabcdc4d8ffc6d5beaf154f18b778f892a0740"
+    },
+    {
+        "Name": "Bitfinex",
+        "Address": "0x876eabf441b2ee5b5b0554fd502a8e0600950cfa"
+    },
+    {
+        "Name": "Binance",
+        "Address": "0xdfd5293d8e347dfe59e90efd55b2956a1343963d"
+    },
+    {
+        "Name": "Binance",
+        "Address": "0x9696f59e4d72e237be84ffd425dcad154bf96976"
+    },
+    {
+        "Name": "Gate",
+        "Address": "0x0d0707963952f2fba59dd06f2b425ace40b492fe"
+    },
+    {
+        "Name": "Huobi",
+        "Address": "0x0a98fb70939162725ae66e626fe4b52cff62c2e5"
+    },
+    {
+        "Name": "Binance",
+        "Address": "0x21a31ee1afc51d94c2efccaa2092ad1028285549"
+    },
+    {
+        "Name": "Huobi",
+        "Address": "0xcac725bef4f114f728cbcfd744a731c2a463c3fc"
+    }
+]

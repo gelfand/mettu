@@ -55,7 +55,7 @@ func TestDB_PutPeekToken(t *testing.T) {
 			want: Token{
 				Address:     common.HexToAddress("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"),
 				Symbol:      "WETH",
-				Decimals:    big.NewInt(18),
+				Decimals:    18,
 				TimesBought: 25,
 				TotalBought: hugeNumber,
 			},
@@ -86,8 +86,6 @@ func TestDB_PutPeekToken(t *testing.T) {
 				t.Errorf("DB.PeekToken() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
-			t.Logf("%+v\n", got)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DB.PeekToken() = %v, want %v", got, tt.want)

@@ -36,3 +36,36 @@ func (db *DB) PeekExchange(tx kv.Tx, addr common.Address) (Exchange, error) {
 		Address: addr,
 	}, nil
 }
+
+func (db *DB) AllExchanges(tx kv.Tx) ([]Exchange, error) {
+	var exchanges []Exchange
+	if err := tx.ForEach(exchangeStorage, []byte{}, func(k, v []byte) error {
+		exchanges = append(exchanges, Exchange{
+			Name:    string(v),
+			Address: common.BytesToAddress(k),
+		})
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return exchanges, nil
+}
+
+func (db *DB) AllExchangesMap(tx kv.Tx) (map[common.Address]Exchange, error) {
+	exchanges := make(map[common.Address]Exchange)
+	if err := tx.ForEach(exchangeStorage, []byte{}, func(k, v []byte) error {
+		addr := common.BytesToAddress(k)
+
+		exchanges[addr] = Exchange{
+			Name:    string(v),
+			Address: addr,
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return exchanges, nil
+}

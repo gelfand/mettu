@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
 	"github.com/ledgerwatch/erigon-lib/kv"
@@ -29,4 +31,18 @@ func newTestDB(t *testing.T) kv.RwDB {
 		panic(err)
 	}
 	return db
+}
+
+func Test_Has(t *testing.T) {
+	db := newTestDBInMem()
+	tx, err := db.BeginRw(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tx.CreateBucket("bucket")
+	tx.Commit()
+
+	roTx, err := db.BeginRo(context.Background())
+	fmt.Println(roTx.Has("bucket", []byte("key")))
 }

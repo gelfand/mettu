@@ -14,9 +14,9 @@ import (
 type Token struct {
 	Address     common.Address
 	Symbol      string
-	TimesBought int
-	Decimals    *big.Int
+	Decimals    int64
 	TotalBought *big.Int
+	TimesBought int
 }
 
 // _token is an internal type, we use it to store big.Int in the database.
@@ -24,9 +24,9 @@ type _token struct {
 	Address common.Address
 	Symbol  string
 	// Amount is stored as bytes.
-	TimesBought int
-	Decimals    []byte
+	Decimals    int64
 	TotalBought []byte
+	TimesBought int
 }
 
 // PutToken puts Token object into the storage.
@@ -35,7 +35,7 @@ func (db *DB) PutToken(tx kv.RwTx, t Token) error {
 		Address:     t.Address,
 		Symbol:      t.Symbol,
 		TimesBought: t.TimesBought,
-		Decimals:    t.Decimals.Bytes(),
+		Decimals:    t.Decimals,
 		TotalBought: t.TotalBought.Bytes(),
 	}
 
@@ -49,6 +49,10 @@ func (db *DB) PutToken(tx kv.RwTx, t Token) error {
 	}
 
 	return nil
+}
+
+func (db *DB) HasToken(tx kv.Tx, addr common.Address) (bool, error) {
+	return tx.Has(tokenStorage, addr.Bytes())
 }
 
 // PeekToken returns Token from the key value storage by it's Address.
@@ -67,7 +71,7 @@ func (db *DB) PeekToken(tx kv.Tx, addr common.Address) (Token, error) {
 		Address:     tokenVal.Address,
 		Symbol:      tokenVal.Symbol,
 		TimesBought: tokenVal.TimesBought,
-		Decimals:    new(big.Int).SetBytes(tokenVal.Decimals),
+		Decimals:    tokenVal.Decimals,
 		TotalBought: new(big.Int).SetBytes(tokenVal.TotalBought),
 	}
 	return t, nil
