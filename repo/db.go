@@ -16,15 +16,18 @@ const (
 	exchangeStorage = "ExchangeStorage"
 	patternStorage  = "PatternStorage"
 	tokenStorage    = "TokenStorage"
+	accountStorage  = "AccountStorage"
 )
 
 var kvTables = []string{
+	accountStorage,
 	exchangeStorage,
 	patternStorage,
 	tokenStorage,
 }
 
 var kvTablesCfg = kv.TableCfg{
+	accountStorage:  kv.TableCfgItem{},
 	exchangeStorage: kv.TableCfgItem{},
 	patternStorage:  kv.TableCfgItem{},
 	tokenStorage:    kv.TableCfgItem{},

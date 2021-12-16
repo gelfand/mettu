@@ -7,6 +7,7 @@ require (
 	github.com/gelfand/log v0.0.0-20211212114338-f088eb233ff6
 	github.com/google/go-cmp v0.5.7-0.20211207210118-3242228551a7
 	github.com/jackc/pgx/v4 v4.14.1
+	github.com/jmoiron/sqlx v1.3.4
 	github.com/ledgerwatch/erigon-lib v0.0.0-20211206140018-b06f3cec6bfb
 	github.com/ugorji/go/codec v1.1.13
 )

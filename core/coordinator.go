@@ -126,6 +126,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 
 		var tokens []repo.Token
 		for _, tokenAddr := range txData.Path {
+			log.Info("Token", "address", tokenAddr)
 			has, err1 := c.db.HasToken(tx, tokenAddr)
 			if err1 != nil {
 				log.Error("Unexpected error, db.HasToken()", "err", err1)
@@ -193,7 +194,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 		if err := tx.Commit(); err != nil {
 			log.Error("Unable to commit storage Transaction, rollbacking", "err", err)
 		}
-
+		return
 	}
 }
 
