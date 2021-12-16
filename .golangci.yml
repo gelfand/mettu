@@ -25,6 +25,7 @@ linters:
     - forcetypeassert
     - paralleltest
     - gochecknoinits
+    - funlen
   fast: false
   gocritic:
     settings:
