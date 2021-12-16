@@ -154,6 +154,34 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 		tokenOut.TimesBought++
 		tokens[len(tokens)-1] = tokenOut
 
+		var pattern repo.Pattern
+		hasPattern, err := c.db.HasPattern(tx, tokenOut.Address, cex.Name)
+		if err != nil {
+			log.Error("unable to check if pattern already persists in the database", "err", err)
+			continue
+		}
+		if hasPattern {
+			pattern, err = c.db.PeekPattern(tx, tokenOut.Address, cex.Name)
+			if err != nil {
+				log.Error("unable to peek pattern", "err", err)
+				continue
+			}
+		} else {
+			pattern = repo.Pattern{
+				TokenAddr:    tokenOut.Address,
+				ExchangeName: cex.Name,
+				Value:        big.NewInt(0),
+				TimesOccured: 0,
+			}
+		}
+		pattern.Value = new(big.Int).Add(pattern.Value, txn.Value())
+		pattern.TimesOccured++
+		if err := c.db.PutPattern(tx, pattern); err != nil {
+			log.Error("unable to put pattern", "err", err)
+		}
+
+		log.Info("Pattern", "token", pattern.TokenAddr, "Exchange", pattern.ExchangeName, "totalAmount", pattern.Value, "timesOccured", pattern.TimesOccured)
+
 		for _, token := range tokens {
 			if err = c.db.PutToken(tx, token); err != nil {
 				log.Error("Unable to update Token information for", "addr", token.Address, "err", err)

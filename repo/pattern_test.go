@@ -13,7 +13,7 @@ import (
 func TestDB_Pattern(t *testing.T) {
 	bigNumber := big.NewInt(0)
 	bigNumber, _ = bigNumber.SetString("115792089237316195423570985008687907853269984665640564039457584007913129639936", 10)
-	hugeNumber := new(big.Int).Mul(bigNumber, big.NewInt(128))
+	hugeNumber := new(big.Int).Mul(bigNumber, big.NewInt(1<<20))
 
 	type fields struct {
 		d kv.RwDB
@@ -68,7 +68,7 @@ func TestDB_Pattern(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			gotHas, err := db.HasPattern(tx, tt.args.p.TokenAddr, tt.args.p.ExchangeName)
+			gotHas, err := db.HasPattern(roTx, tt.args.p.TokenAddr, tt.args.p.ExchangeName)
 			if err != nil {
 				t.Fatal()
 			}
