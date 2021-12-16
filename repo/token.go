@@ -76,3 +76,28 @@ func (db *DB) PeekToken(tx kv.Tx, addr common.Address) (Token, error) {
 	}
 	return t, nil
 }
+
+func (db *DB) AllTokens(tx kv.Tx) ([]Token, error) {
+	var tokens []Token
+	if tokensErr := tx.ForEach(tokenStorage, []byte{}, func(k, v []byte) error {
+		var tokenVal _token
+		if err := cbor.Unmarshal(bytes.NewReader(v), &tokenVal); err != nil {
+			return fmt.Errorf("unable to decode token, err=%w", err)
+		}
+
+		t := Token{
+			Address:     tokenVal.Address,
+			Symbol:      tokenVal.Symbol,
+			TimesBought: tokenVal.TimesBought,
+			Decimals:    tokenVal.Decimals,
+			TotalBought: new(big.Int).SetBytes(tokenVal.TotalBought),
+		}
+		tokens = append(tokens, t)
+
+		return nil
+	}); tokensErr != nil {
+		return nil, fmt.Errorf("unable to retrieve all tokens: err=%w", tokensErr)
+	}
+
+	return tokens, nil
+}

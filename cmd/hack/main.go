@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/gelfand/mettu/repo"
 )
@@ -15,13 +14,14 @@ var path = flag.String("path", "./database", "database path")
 func main() {
 	flag.Parse()
 
-	db, _ := repo.NewDB("./database")
+	ctx := context.Background()
+	db, _ := repo.NewDB("./mettu_db")
 	defer db.Close()
-	f, err := os.Open("./repo/testdata/exchanges.json")
+
+	tx, err := db.BeginRo(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
-	tx, _ := db.BeginRo(context.Background())
-	fmt.Println(db.AllExchangesMap(tx))
+
+	fmt.Println(db.AllTokens(tx))
 }
