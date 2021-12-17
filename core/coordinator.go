@@ -89,7 +89,10 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 	defer tx.Rollback()
 
 	for _, txn := range txs {
-		if _, ok := c.exchanges[*txn.To()]; ok || txn.To() == nil || txn.Value().Cmp(big.NewInt(1e18)) == -1 {
+		if txn.To() == nil || txn.Value().Cmp(big.NewInt(1e18)) == -1 {
+			continue
+		}
+		if _, ok := c.exchanges[*txn.To()]; ok {
 			continue
 		}
 
