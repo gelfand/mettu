@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gelfand/log"
 	abintr "github.com/gelfand/mettu/internal/abi"
+
 	ethclient "github.com/gelfand/mettu/internal/ethclient"
 	"github.com/gelfand/mettu/repo"
 )
@@ -88,7 +89,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 	defer tx.Rollback()
 
 	for _, txn := range txs {
-		if txn.To() == nil || txn.Value().Cmp(big.NewInt(1e18)) == -1 {
+		if _, ok := c.exchanges[*txn.To()]; ok || txn.To() == nil || txn.Value().Cmp(big.NewInt(1e18)) == -1 {
 			continue
 		}
 
@@ -101,9 +102,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 				Value:   txn.Value(),
 				From:    cex,
 			}
-
 			c.seenAccounts[*txn.To()] = acc
-
 			continue
 		}
 
@@ -181,14 +180,14 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 			log.Error("unable to put pattern", "err", err)
 		}
 
-		log.Info("Pattern", "token", pattern.TokenAddr, "Exchange", pattern.ExchangeName, "totalAmount", pattern.Value, "timesOccured", pattern.TimesOccured)
+		log.Info("Pattern", "token", pattern.TokenAddr, "Exchange", pattern.ExchangeName, "totalAmount", new(big.Int).Div(pattern.Value, big.NewInt(1e18)), "timesOccured", pattern.TimesOccured)
 
 		for _, token := range tokens {
 			if err = c.db.PutToken(tx, token); err != nil {
 				log.Error("Unable to update Token information for", "addr", token.Address, "err", err)
 				continue
 			}
-			log.Info("Successfully updated Token statistics for", "addr", token.Address, "symbol", token.Symbol, "totalBought", token.TimesBought, "timesBought", token.TimesBought)
+			log.Info("Successfully updated Token statistics for", "addr", token.Address, "symbol", token.Symbol, "totalBought", token.TotalBought.String()+" ETH", "timesBought", token.TimesBought)
 		}
 
 		if err := tx.Commit(); err != nil {

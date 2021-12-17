@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"math/big"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -126,7 +125,7 @@ func TestDB_PutPeekExchange(t *testing.T) {
 				t.Errorf("DB.PeekExchange() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !cmp.Equal(got, tt.want) {
 				t.Errorf("DB.PeekExchange() = %v, want %v", got, tt.want)
 			}
 

@@ -3,10 +3,10 @@ package repo
 import (
 	"context"
 	"math/big"
-	"reflect"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/google/go-cmp/cmp"
 	"github.com/ledgerwatch/erigon-lib/kv"
 )
 
@@ -87,7 +87,7 @@ func TestDB_PutPeekToken(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(got, tt.want) {
+			if !cmp.Equal(got, tt.want, cmp.AllowUnexported(big.Int{})) {
 				t.Errorf("DB.PeekToken() = %v, want %v", got, tt.want)
 			}
 		})

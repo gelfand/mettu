@@ -2,11 +2,11 @@ package abi
 
 import (
 	"math/big"
-	"reflect"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestDecode(t *testing.T) {
@@ -51,7 +51,7 @@ func TestDecode(t *testing.T) {
 				AmountOut: new(big.Int).SetBytes(common.FromHex("1043561a8829300000")),
 				TokenIn:   common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
 				TokenOut:  common.HexToAddress("0x2653891204F463fb2a2F4f412564b19e955166aE"),
-				Path:      []common.Address{common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"), common.HexToAddress("0x2653891204F463fb2a2F4f412564b19e955166aE")},
+				Path:      []common.Address{common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"), common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), common.HexToAddress("0x2653891204F463fb2a2F4f412564b19e955166aE")},
 			},
 			wantErr: false,
 		},
@@ -68,7 +68,7 @@ func TestDecode(t *testing.T) {
 				t.Errorf("Decode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !cmp.Equal(got, tt.want, cmp.AllowUnexported(big.Int{})) {
 				t.Errorf("Decode() = %v, want %v", got, tt.want)
 			}
 		})

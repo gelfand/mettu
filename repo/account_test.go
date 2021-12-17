@@ -3,10 +3,11 @@ package repo
 import (
 	"context"
 	"math/big"
-	"reflect"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/ledgerwatch/erigon-lib/kv"
 )
 
@@ -101,46 +102,72 @@ func TestDB_PutAccount(t *testing.T) {
 			if err != nil {
 				t.Errorf("DB.PeekAccount() error = %v", err)
 			}
-			if !reflect.DeepEqual(got2, tt.args.acc) {
+			if !cmp.Equal(got2, tt.args.acc, cmp.AllowUnexported(big.Int{})) {
 				t.Errorf("DB.PutAccount(), got = %v, want = %v", got2, tt.args.acc)
 			}
 		})
 	}
 }
 
-// func TestDB_HasAccount(t *testing.T) {
-// 	type fields struct {
-// 		d kv.RwDB
-// 	}
-// 	type args struct {
-// 		tx   kv.Tx
-// 		addr common.Address
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    bool
-// 		wantErr bool
-// 	}{
-// 		// TODO: Add test cases.
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			db := &DB{
-// 				d: tt.fields.d,
-// 			}
-// 			got, err := db.HasAccount(tt.args.tx, tt.args.addr)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("DB.HasAccount() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if got != tt.want {
-// 				t.Errorf("DB.HasAccount() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func TestDB_HasAccount(t *testing.T) {
+	type fields struct {
+		d kv.RwDB
+	}
+	type args struct {
+		tx   kv.Tx
+		addr common.Address
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "test0",
+			fields: fields{
+				d: newTestDB(t),
+			},
+			args: args{
+				tx:   nil,
+				addr: common.BytesToAddress([]byte("has account test0")),
+			},
+			want:    true,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := &DB{
+				d: tt.fields.d,
+			}
+			done := make(chan bool, 1)
+			go func() {
+				tx, _ := db.BeginRw(context.Background())
+				db.PutAccount(tx, Account{
+					Address:       common.BytesToAddress([]byte("has account test0")),
+					TotalReceived: &big.Int{},
+					TotalSpent:    &big.Int{},
+					FromExchanges: map[string]bool{},
+				})
+				tx.Commit()
+				done <- true
+			}()
+			<-done
+
+			tt.args.tx, _ = db.BeginRo(context.Background())
+			got, err := db.HasAccount(tt.args.tx, tt.args.addr)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DB.HasAccount() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DB.HasAccount() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 // func TestDB_PeekAccount(t *testing.T) {
 // 	type fields struct {
@@ -209,35 +236,93 @@ func TestDB_PutAccount(t *testing.T) {
 // 	}
 // }
 
-// func TestDB_AllAccountsMap(t *testing.T) {
-// 	type fields struct {
-// 		d kv.RwDB
-// 	}
-// 	type args struct {
-// 		tx kv.Tx
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    map[common.Address]Account
-// 		wantErr bool
-// 	}{
-// 		// TODO: Add test cases.
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			db := &DB{
-// 				d: tt.fields.d,
-// 			}
-// 			got, err := db.AllAccountsMap(tt.args.tx)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("DB.AllAccountsMap() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("DB.AllAccountsMap() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func TestDB_AllAccountsMap(t *testing.T) {
+	type fields struct {
+		d kv.RwDB
+	}
+	type args struct {
+		tx kv.Tx
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    map[common.Address]Account
+		wantErr bool
+	}{
+		{
+			name:   "test0",
+			fields: fields{d: newTestDB(t)},
+			args:   args{},
+			want: map[common.Address]Account{
+				{0xff}: {
+					Address:       common.Address{0xff},
+					TotalReceived: big.NewInt(0),
+					TotalSpent:    big.NewInt(0),
+					FromExchanges: map[string]bool{"": true},
+				},
+				{0xfe, 0xfe}: {
+					Address:       common.Address{0xfe, 0xfe},
+					TotalReceived: big.NewInt(0),
+					TotalSpent:    big.NewInt(0),
+					FromExchanges: map[string]bool{"": true},
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+		})
+		db := &DB{
+			d: tt.fields.d,
+		}
+
+		accountsTestdata(db)
+		tt.args.tx, _ = db.BeginRo(context.Background())
+		got, err := db.AllAccountsMap(tt.args.tx)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("DB.AllAccountsMap() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
+
+		if !cmp.Equal(tt.want, got, cmpopts.SortMaps(func(x, y common.Address) bool {
+			xBig, yBig := new(big.Int).SetBytes(x[:]), new(big.Int).SetBytes(y[:])
+			return xBig.Cmp(yBig) == -1
+		}), cmp.AllowUnexported(big.Int{})) {
+			t.Errorf("DB.AllAccountsMap() got = %v, want = %v", got, tt.want)
+		}
+	}
+}
+
+func accountsTestdata(db *DB) {
+	tx, err := db.BeginRw(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	defer tx.Rollback()
+
+	db.PutAccount(tx, Account{
+		Address:       common.Address{0xff},
+		TotalReceived: big.NewInt(0),
+		TotalSpent:    big.NewInt(0),
+		FromExchanges: map[string]bool{"": true},
+	})
+
+	db.PutAccount(tx, Account{
+		Address:       common.Address{0xfe, 0xfe},
+		TotalReceived: big.NewInt(0),
+		TotalSpent:    big.NewInt(0),
+		FromExchanges: map[string]bool{"": true},
+	})
+	if err := tx.Commit(); err != nil {
+		panic(err)
+	}
+}
+
+func must(thing func() (interface{}, interface{})) {
+	if _, err := thing(); err != nil {
+		panic(err)
+	}
+}

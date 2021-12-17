@@ -17,10 +17,12 @@ import (
 	"github.com/gelfand/mettu/repo"
 )
 
+var homedir, _ = os.UserHomeDir()
+
 var (
 	doInit  = flag.Bool("init", false, "initialize new database")
 	rpcAddr = flag.String("rpc.addr", "ws://127.0.0.1:8545", "Ethereum RPC address")
-	datadir = flag.String("datadir", "./mettu", "path to the mettu database")
+	datadir = flag.String("datadir", homedir+"/.mettu/", "path to the mettu database")
 
 	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 	memprofile = flag.String("memprofile", "", "write memory profile to `file`")
@@ -34,6 +36,8 @@ func usage() {
 func main() {
 	flag.Usage = usage
 	flag.Parse()
+
+	os.UserHomeDir()
 
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
