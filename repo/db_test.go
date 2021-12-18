@@ -44,5 +44,8 @@ func Test_Has(t *testing.T) {
 	tx.Commit()
 
 	roTx, err := db.BeginRo(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
 	fmt.Println(roTx.Has("bucket", []byte("key")))
 }

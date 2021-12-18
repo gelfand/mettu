@@ -10,9 +10,9 @@ import (
 // Exchange is CEX.
 type Exchange struct {
 	// Name is value corresponding to the Address.
-	Name string
+	Name string `json:"Name"`
 	// We use Address as key in our storage layout.
-	Address common.Address
+	Address common.Address `json:"Address"`
 }
 
 // PutExchange inserts Exchange into the storage.

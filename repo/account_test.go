@@ -45,7 +45,7 @@ func TestDB_PutAccount(t *testing.T) {
 					Address:       common.BytesToAddress([]byte("acc0")),
 					TotalReceived: hugeNumber,
 					TotalSpent:    hugeNumber,
-					FromExchanges: exchanges,
+					Exchange:      "Binance",
 				},
 			},
 			wantErr: false,
@@ -59,7 +59,7 @@ func TestDB_PutAccount(t *testing.T) {
 					Address:       common.BytesToAddress([]byte("qwerty")),
 					TotalReceived: hugeNumber,
 					TotalSpent:    hugeNumber,
-					FromExchanges: exchanges,
+					Exchange:      "Binance",
 				},
 			},
 			wantErr: false,
@@ -149,7 +149,7 @@ func TestDB_HasAccount(t *testing.T) {
 					Address:       common.BytesToAddress([]byte("has account test0")),
 					TotalReceived: &big.Int{},
 					TotalSpent:    &big.Int{},
-					FromExchanges: map[string]bool{},
+					Exchange:      "",
 				})
 				tx.Commit()
 				done <- true
@@ -259,13 +259,13 @@ func TestDB_AllAccountsMap(t *testing.T) {
 					Address:       common.Address{0xff},
 					TotalReceived: big.NewInt(0),
 					TotalSpent:    big.NewInt(0),
-					FromExchanges: map[string]bool{"": true},
+					Exchange:      "",
 				},
 				{0xfe, 0xfe}: {
 					Address:       common.Address{0xfe, 0xfe},
 					TotalReceived: big.NewInt(0),
 					TotalSpent:    big.NewInt(0),
-					FromExchanges: map[string]bool{"": true},
+					Exchange:      "",
 				},
 			},
 			wantErr: false,
@@ -307,14 +307,14 @@ func accountsTestdata(db *DB) {
 		Address:       common.Address{0xff},
 		TotalReceived: big.NewInt(0),
 		TotalSpent:    big.NewInt(0),
-		FromExchanges: map[string]bool{"": true},
+		Exchange:      "",
 	})
 
 	db.PutAccount(tx, Account{
 		Address:       common.Address{0xfe, 0xfe},
 		TotalReceived: big.NewInt(0),
 		TotalSpent:    big.NewInt(0),
-		FromExchanges: map[string]bool{"": true},
+		Exchange:      "",
 	})
 	if err := tx.Commit(); err != nil {
 		panic(err)

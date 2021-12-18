@@ -98,7 +98,7 @@ func initDB(ctx context.Context, dbPath string) error {
 	}
 	defer db.Close()
 
-	f, err := os.Open("exchanges.json")
+	f, err := os.Open("./repo/testdata/exchanges.json")
 	if err != nil {
 		return fmt.Errorf("unable to open `exchanges.json`, err=%w", err)
 	}

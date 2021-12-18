@@ -10,6 +10,13 @@ import (
 	"github.com/ledgerwatch/erigon-lib/kv"
 )
 
+type FullPattern struct {
+	Token    Token
+	Exchange string
+	Value    *big.Int
+	Counter  int
+}
+
 type Pattern struct {
 	TokenAddr    common.Address
 	ExchangeName string
@@ -92,4 +99,69 @@ func (db *DB) PeekPattern(tx kv.Tx, token common.Address, exchangeName string) (
 		Value:        new(big.Int).SetBytes(value.Value),
 		TimesOccured: value.TimesOccured,
 	}, nil
+}
+
+func (db *DB) AllPatterns(tx kv.Tx) ([]Pattern, error) {
+	var patterns []Pattern
+	if err := tx.ForEach(patternStorage, []byte{}, func(k, v []byte) error {
+		var (
+			value _patternValue
+			key   _patternKey
+		)
+
+		if err := cbor.Unmarshal(bytes.NewReader(k), &key); err != nil {
+			return fmt.Errorf("could not unmarshal pattern key: %w", err)
+		}
+		if err := cbor.Unmarshal(bytes.NewReader(v), &value); err != nil {
+			return fmt.Errorf("could not unmarshal pattern value: %w", err)
+		}
+
+		pattern := Pattern{
+			TokenAddr:    key.TokenAddr,
+			ExchangeName: key.ExchangeName,
+			Value:        new(big.Int).SetBytes(value.Value),
+			TimesOccured: value.TimesOccured,
+		}
+		patterns = append(patterns, pattern)
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("unable to iterate through all patterns: %w", err)
+	}
+
+	return patterns, nil
+}
+
+func (db *DB) AllPatternsData(tx kv.Tx) ([]FullPattern, error) {
+	tokensMap, err := db.AllTokensMap(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	var patterns []FullPattern
+	if err := tx.ForEach(patternStorage, []byte{}, func(k, v []byte) error {
+		var (
+			value _patternValue
+			key   _patternKey
+		)
+
+		if err := cbor.Unmarshal(bytes.NewReader(k), &key); err != nil {
+			return fmt.Errorf("could not unmarshal pattern key: %w", err)
+		}
+		if err := cbor.Unmarshal(bytes.NewReader(v), &value); err != nil {
+			return fmt.Errorf("could not unmarshal pattern value: %w", err)
+		}
+
+		pattern := FullPattern{
+			Token:    tokensMap[key.TokenAddr],
+			Exchange: key.ExchangeName,
+			Value:    new(big.Int).SetBytes(value.Value),
+			Counter:  value.TimesOccured,
+		}
+		patterns = append(patterns, pattern)
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("unable to iterate through all patterns: %w", err)
+	}
+
+	return patterns, nil
 }

@@ -14,20 +14,20 @@ type Account struct {
 	Address       common.Address
 	TotalReceived *big.Int
 	TotalSpent    *big.Int
-	FromExchanges map[string]bool
+	Exchange      string
 }
 
 type _account struct {
 	TotalReceived []byte
 	TotalSpent    []byte
-	FromExchanges map[string]bool
+	Exchange      string
 }
 
 func (db *DB) PutAccount(tx kv.RwTx, acc Account) error {
 	a := _account{
 		TotalReceived: acc.TotalReceived.Bytes(),
 		TotalSpent:    acc.TotalSpent.Bytes(),
-		FromExchanges: acc.FromExchanges,
+		Exchange:      acc.Exchange,
 	}
 
 	var accBuf bytes.Buffer
@@ -59,7 +59,7 @@ func (db *DB) PeekAccount(tx kv.Tx, address common.Address) (Account, error) {
 		Address:       address,
 		TotalReceived: new(big.Int).SetBytes(a.TotalReceived),
 		TotalSpent:    new(big.Int).SetBytes(a.TotalSpent),
-		FromExchanges: a.FromExchanges,
+		Exchange:      a.Exchange,
 	}, nil
 }
 
@@ -76,7 +76,7 @@ func (db *DB) AllAccounts(tx kv.Tx) ([]Account, error) {
 			Address:       addr,
 			TotalReceived: new(big.Int).SetBytes(a.TotalReceived),
 			TotalSpent:    new(big.Int).SetBytes(a.TotalSpent),
-			FromExchanges: a.FromExchanges,
+			Exchange:      a.Exchange,
 		}
 		accounts = append(accounts, acc)
 		return nil
@@ -100,7 +100,7 @@ func (db *DB) AllAccountsMap(tx kv.Tx) (map[common.Address]Account, error) {
 			Address:       addr,
 			TotalReceived: new(big.Int).SetBytes(a.TotalReceived),
 			TotalSpent:    new(big.Int).SetBytes(a.TotalSpent),
-			FromExchanges: a.FromExchanges,
+			Exchange:      a.Exchange,
 		}
 		accounts[addr] = acc
 		return nil

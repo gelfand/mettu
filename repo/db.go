@@ -17,6 +17,7 @@ const (
 	patternStorage  = "PatternStorage"
 	tokenStorage    = "TokenStorage"
 	accountStorage  = "AccountStorage"
+	swapStorage     = "SwapStorage"
 )
 
 var kvTables = []string{
@@ -24,6 +25,7 @@ var kvTables = []string{
 	exchangeStorage,
 	patternStorage,
 	tokenStorage,
+	swapStorage,
 }
 
 var kvTablesCfg = kv.TableCfg{
@@ -31,6 +33,7 @@ var kvTablesCfg = kv.TableCfg{
 	exchangeStorage: kv.TableCfgItem{},
 	patternStorage:  kv.TableCfgItem{},
 	tokenStorage:    kv.TableCfgItem{},
+	swapStorage:     kv.TableCfgItem{},
 }
 
 func NewDB(path string) (*DB, error) {

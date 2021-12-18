@@ -23,5 +23,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(db.AllTokens(tx))
+	fmt.Println(db.AllExchanges(tx))
 }

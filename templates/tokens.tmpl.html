@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Tokens</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="css/style.css" rel="stylesheet">
+    </head>
+    <body>
+    <table>
+    <tr>
+        <td>Address</td>
+        <td>Symbol</td>
+        <td>Total Bought</td>
+        <td>Times Bought</td>
+    </tr>
+    {{ range . }}
+    <tr>
+        <td><a href="https://www.dextools.io/app/ether/pair-explorer/{{ .Address}}">{{ .Address}}</a></td>
+        <td>{{ .Symbol }}</td>
+        <td>{{ .TotalBought }} ETH</td>
+        <td>{{ .TimesBought }}</td>
+    </tr>
+    {{ end }}
+    </table>
+
+    </body>
+</html>
