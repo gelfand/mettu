@@ -19,6 +19,10 @@ type Token struct {
 	TimesBought int
 }
 
+func (t Token) Denominator() *big.Int {
+	return new(big.Int).Exp(big.NewInt(10), big.NewInt(t.Decimals), nil)
+}
+
 // _token is an internal type, we use it to store big.Int in the database.
 type _token struct {
 	Address common.Address

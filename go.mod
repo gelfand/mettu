@@ -10,6 +10,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/ledgerwatch/erigon-lib v0.0.0-20211206140018-b06f3cec6bfb
 	github.com/ugorji/go/codec v1.1.13
+	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
 )
 
 require (

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="static/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="centerswaps">
+            <table>
+                <tr>
+                    <td>Wallet</td>
+                    <td>Token</td>
+                    <td>Symbol</td>
+                    <td>Amount</td>
+                    <td>Price</td>
+                    <td>Current Price</td>
+                    <td>Profit</td>
+                    <td>Profitabillity</td>
+                </tr>
+                {{ range  . }}
+                <tr>
+                    <td><a href="https://etherscan.io/address/{{ .Wallet.Address }}">{{ .Wallet.Address }}</a></td>
+                    <td><a href="https://dex.guru/token/{{ .Token.Address }}-eth">{{ .Token.Address}}</a></td>
+                    <td>{{ .Token.Symbol }}</td>
+                    <td>{{ .Value }} ETH</td>
+                    <td>{{ printf "%.6f" .PriceFloat }} ETH</td>
+                    <td>{{ printf "%.6f" .CurrPriceFloat }} ETH</td>
+                    <td>{{ .Profit }} ETH</td>
+                    <td>{{ .Profitability }}%</td>
+                </tr>
+                {{ end }}
+            </table>
+        </div>
+    </body>
+</html>

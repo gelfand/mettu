@@ -17,12 +17,6 @@ import (
 	"github.com/gelfand/mettu/repo"
 )
 
-// type Account struct {
-// 	Address common.Address `json:"Address"`
-// 	Value   *big.Int       `json:"Value"`
-// 	From    repo.Exchange  `json:"From"`
-// }
-
 type Coordinator struct {
 	// TODO: maybe make use of this lock.
 	lock sync.Mutex
@@ -79,7 +73,7 @@ func NewCoordinator(ctx context.Context, dbPath string, rpcAddr string) (*Coordi
 	return c, tx.Commit()
 }
 
-// TODO: Parallelize
+// TODO: Parallelize.
 func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Transaction) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -210,6 +204,32 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 
 		if err := c.db.PutPattern(tx, pattern); err != nil {
 			return fmt.Errorf("unable to put updated pattern data: %w", err)
+		}
+
+		factoryAddr, err := c.client.FactoryAt(*txn.To())
+		if err != nil {
+			log.Debug(err.Error())
+			continue
+		}
+
+		var price *big.Int
+		price, err = c.client.PriceAt(factoryAddr, tokens)
+		if err != nil {
+			log.Debug("Unable to retrieve price of: %v, err: %w", tokenOut, err)
+			price = big.NewInt(1)
+		}
+		s := repo.Swap{
+			TxHash:    txn.Hash(),
+			Wallet:    from,
+			TokenAddr: tokenOut.Address,
+			Path:      txData.Path,
+			Factory:   factoryAddr,
+			Price:     price,
+			Value:     txn.Value(),
+		}
+
+		if err := c.db.PutSwap(tx, s); err != nil {
+			return fmt.Errorf("unable to put swap record: %w", err)
 		}
 
 		for _, token := range tokens {

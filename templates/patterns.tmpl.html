@@ -5,27 +5,29 @@
       <title>Patterns</title>
      <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="css/style.css" rel="stylesheet">
+        <link href="static/style.css" rel="stylesheet">
 
   </head>
   <body>
-   <table>
-    <tr>
-        <td>Token</td>
-        <td>Symbol</td>
-        <td>Total Amount</td>
-        <td>Exchange</td>
-        <td>Counter</td>
-    </tr>
-    {{ range . }}
-    <tr>
-        <td> {{ .Token.Address}}</td>
-        <td>{{ .Token.Symbol }}</td>
-        <td>{{ .Value }} ETH</td>
-        <td>{{ .Exchange }}</td>
-        <td>{{ .Counter }}</td>
-    </tr>
-    {{ end }}
-    </table>
+      <div class="center">
+       <table>
+        <tr>
+            <td>Token</td>
+            <td>Symbol</td>
+            <td>Total Amount</td>
+            <td>Exchange</td>
+            <td>Counter</td>
+        </tr>
+        {{ range . }}
+        <tr>
+            <td><a href="https://dex.guru/token/{{ .Token.Address }}-eth">{{ .Token.Address}}</a></td>
+            <td>{{ .Token.Symbol }}</td>
+            <td>{{ .Value }} ETH</td>
+            <td>{{ .Exchange }}</td>
+            <td>{{ .Counter }}</td>
+        </tr>
+        {{ end }}
+        </table>
+      </div>
   </body>
 </html>

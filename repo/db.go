@@ -47,6 +47,17 @@ func NewDB(path string) (*DB, error) {
 	return &DB{db}, nil
 }
 
+func NewDBReadOnly(path string) (*DB, error) {
+	db, err := mdbx.NewMDBX(nil).Path(path).WithTablessCfg(
+		func(defaultBuckets kv.TableCfg) kv.TableCfg {
+			return kvTablesCfg
+		}).Readonly().Open()
+	if err != nil {
+		return nil, err
+	}
+	return &DB{db}, nil
+}
+
 // BeginRo begins read-only transaction.
 func (db *DB) BeginRo(ctx context.Context) (kv.Tx, error) {
 	return db.d.BeginRo(ctx)
@@ -70,6 +81,10 @@ func (db *DB) Update(ctx context.Context, f func(tx kv.RwTx) error) (err error) 
 // View starts read-only transaction, for doing many-things.
 func (db *DB) View(ctx context.Context, f func(tx kv.Tx) error) (err error) {
 	return db.d.View(ctx, f)
+}
+
+func (db *DB) FlushBucket(tx kv.RwTx, table string) error {
+	return tx.ClearBucket(table)
 }
 
 // func (db *DB) InsertToken(ctx context.Context) error {
