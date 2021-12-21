@@ -1,3 +1,5 @@
 *.abi
 database
 *.proto
+certs/*
+website

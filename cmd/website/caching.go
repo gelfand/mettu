@@ -19,15 +19,20 @@ import (
 	"github.com/gelfand/mettu/repo"
 )
 
-var client, _ = ethclient.DialContext(context.Background(), rpcAddr) // Templates.
-var (
-	tokensTmpl    = template.Must(template.New("tokens.tmpl.html").ParseFiles("./templates/tokens.tmpl.html"))
-	patternsTmpl  = template.Must(template.New("patterns.tmpl.html").ParseFiles("./templates/patterns.tmpl.html"))
-	walletsTmpl   = template.Must(template.New("wallets.tmpl.html").ParseFiles("./templates/wallets.tmpl.html"))
-	exchangesTmpl = template.Must(template.New("exchanges.tmpl.html").ParseFiles("./templates/exchanges.tmpl.html"))
+var client, _ = ethclient.DialContext(context.Background(), rpcAddr)
 
-	swapsTmpl = template.Must(template.New("swaps.tmpl.html").ParseFiles("./templates/swaps.tmpl.html"))
+// Templates.
+var (
+	tokensTmpl    = template.Must(template.New("tokens.tmpl.html").ParseFiles("./static/templates/tokens.tmpl.html"))
+	patternsTmpl  = template.Must(template.New("patterns.tmpl.html").ParseFiles("./static/templates/patterns.tmpl.html"))
+	walletsTmpl   = template.Must(template.New("wallets.tmpl.html").ParseFiles("./static/templates/wallets.tmpl.html"))
+	exchangesTmpl = template.Must(template.New("exchanges.tmpl.html").ParseFiles("./static/templates/exchanges.tmpl.html"))
+	swapsTmpl     = template.Must(template.New("swaps.tmpl.html").ParseFiles("./static/templates/swaps.tmpl.html"))
+
+	tokenDenominator = big.NewInt(1e18)
 )
+
+var rat0 = new(big.Rat).SetInt64(0)
 
 // Atomic caching.
 var (
@@ -78,26 +83,97 @@ func cacheTokens(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 	}
 	defer tx.Rollback()
 
-	tokens, err := db.AllTokens(tx)
+	swaps, err := db.AllSwaps(tx)
 	if err != nil {
-		handleErr(&tokensDat, "could not retrieve all tokens data", err)
+		handleErr(&tokensDat, "could not retrieve all swaps data", err)
 		return
 	}
 
+	tokens := make(map[common.Address]repo.Swap)
+	for i := range swaps {
+		if _, ok := tokens[swaps[i].TokenAddr]; ok {
+			continue
+		}
+		tokens[swaps[i].TokenAddr] = swaps[i]
+	}
+
+	type tokenData struct {
+		Token       repo.Token
+		TotalBought *big.Int
+		Price       string
+		CurrPrice   string
+		Diff        string
+		DiffRat     *big.Rat
+	}
+
+	i := 0
+	tt := make([]tokenData, len(tokens))
+	for tokenAddr, v := range tokens {
+		t, err := db.PeekToken(tx, tokenAddr)
+		if err != nil {
+			panic(err)
+		}
+
+		priceRat := new(big.Rat).SetInt(t.Price)
+		priceRat = new(big.Rat).Quo(priceRat, new(big.Rat).SetInt64(1e18))
+
+		r, err := client.GetReservesPath(v.Factory, v.Path)
+		if err != nil {
+			panic(err)
+		}
+
+		currPrice := lib.CalculatePrice(t.Denominator(), r)
+		currPriceRat := new(big.Rat).SetInt(currPrice)
+		currPriceRat = new(big.Rat).Quo(currPriceRat, new(big.Rat).SetInt64(1e18))
+
+		diff := new(big.Rat).Set(rat0)
+		if currPriceRat.Cmp(priceRat) > 0 && priceRat.Cmp(rat0) != 0 {
+			diff = new(big.Rat).Quo(currPriceRat, priceRat)
+		}
+
+		tDat := tokenData{
+			Token:       t,
+			TotalBought: util.NormalizePrecision(t.TotalBought),
+			Price:       priceRat.FloatString(6),
+			CurrPrice:   currPriceRat.FloatString(6),
+			Diff:        diff.FloatString(2),
+			DiffRat:     diff,
+		}
+		tt[i] = tDat
+		i++
+	}
 	if err := tx.Commit(); err != nil {
 		handleErr(&tokensDat, "could not commit read-only transaction", err)
 		return
 	}
 
-	sort.SliceStable(tokens, func(i, j int) bool {
-		return tokens[i].TotalBought.Cmp(tokens[j].TotalBought) == 1
+	// var tokensData []tokenData
+
+	// for _, token := range t {
+	//        r, err := client.GetReserves()
+
+	// 	tData := tokenData{
+	// 		Token:       token,
+	// 		Price:       priceRat.FloatString(6),
+	// 		TotalBought: util.NormalizePrecision(token.TotalBought),
+	// 		CurrPrice:     ,
+	// 		Change:      "",
+	// 	}
+	// }
+
+	defer tx.Rollback()
+	sort.SliceStable(tt, func(i, j int) bool {
+		diffRat0, diffRat1 := tt[i].DiffRat, tt[j].DiffRat
+		if diffRat0 == nil || diffRat1 == nil {
+			fmt.Println(tt[i])
+			return true
+		}
+
+		return diffRat0.Cmp(diffRat1) > 0
 	})
-	for i := range tokens {
-		util.NormalizePrecision(tokens[i].TotalBought)
-	}
 
 	var buf bytes.Buffer
-	if err := tokensTmpl.Execute(&buf, tokens); err != nil {
+	if err := tokensTmpl.Execute(&buf, tt); err != nil {
 		handleErr(&tokensDat, "could not execute token template", err)
 		return
 	}
@@ -239,7 +315,8 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		Value        string
 		Price        string
 		CurrentPrice string
-		Diff         int64
+		Diff         string
+		DiffRat      *big.Rat
 	}
 
 	swapsData := make([]swapData, len(swaps))
@@ -247,9 +324,9 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		token := tokens[swap.TokenAddr]
 
 		v := swapData{
-			TokenAddr:    util.AddressShort(swap.TokenAddr),
+			TokenAddr:    swap.TokenAddr.String(),
 			Swap:         swap,
-			Wallet:       util.AddressShort(swap.Wallet),
+			Wallet:       swap.Wallet.String(),
 			Symbol:       token.Symbol,
 			Value:        "",
 			Price:        "",
@@ -262,7 +339,7 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		}
 
 		numerator := new(big.Rat).SetInt(swap.Price)
-		denominator := new(big.Rat).SetInt(big.NewInt(1e18))
+		denominator := new(big.Rat).SetInt64(1e18)
 		priceRat := new(big.Rat).Quo(numerator, denominator)
 		v.Price = priceRat.FloatString(6)
 
@@ -272,19 +349,13 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		priceRat = new(big.Rat).Quo(numerator, denominator)
 		v.CurrentPrice = priceRat.FloatString(6)
 
-		valRat := new(big.Rat).SetInt(swap.Value)
-		valRat = valRat.Quo(valRat, denominator)
-		v.Value = valRat.FloatString(3)
+		v.Value = new(big.Int).Div(swap.Value, tokenDenominator).String()
 
-		var diff *big.Int
-
+		var diff *big.Rat
 		if price.Cmp(swap.Price) > 0 && swap.Price.Cmp(common.Big0) != 0 {
-			diff = new(big.Int).Div(price, swap.Price)
-		} else if price.Cmp(common.Big0) != 0 {
-			diff = new(big.Int).Div(swap.Price, price)
-			diff = new(big.Int).Neg(diff)
+			diff = new(big.Rat).Quo(new(big.Rat).SetInt(price), new(big.Rat).SetInt(swap.Price))
 		} else {
-			diff = big.NewInt(0)
+			diff = new(big.Rat).Set(rat0)
 		}
 		//
 		// diff := new(big.Int).Mul(Div(sum, sumDiv)
@@ -301,13 +372,14 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		// 	diff = new(big.Int).Div(decrease, den)
 		// }
 		fmt.Println(diff)
-		v.Diff = diff.Int64()
+		v.Diff = diff.FloatString(2)
+		v.DiffRat = diff
 
 		swapsData[i] = v
 	}
 
 	sort.SliceStable(swapsData, func(i, j int) bool {
-		return swapsData[i].Diff > swapsData[j].Diff
+		return swapsData[i].DiffRat.Cmp(swapsData[j].DiffRat) > 0
 	})
 
 	// swaps, err = client.FetchSwapsData(swaps)

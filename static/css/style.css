@@ -8,10 +8,13 @@ html {
 }
 
 td {
-    border: 25px;
-    border-spacing: 25px;
+    padding: 0 25px 0 0;
 }
-.center {
-  margin: auto;
-  width: 50%;
+
+tr.headers {
+    font-weight: 600;
 }
+/* .center { */
+/*   margin: auto; */
+/*   width: 50%; */
+/* } */

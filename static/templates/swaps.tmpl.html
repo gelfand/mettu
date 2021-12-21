@@ -4,19 +4,19 @@
         <title></title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="static/style.css" rel="stylesheet">
+        <link href="static/css/style.css" rel="stylesheet">
     </head>
     <body>
         <div class="centerswaps">
             <table>
-                <tr>
-                    <td><h3>Wallet</h3></td>
-                    <td><h3>Token</h3></td>
-                    <td><h3>Symbol</h3></td>
-                    <td><h3>Amount</h3></td>
-                    <td><h3>Price</h3></td>
-                     <td><h3>Current Price</h3></td>
-                     <td><h3>Change</h3></td>
+                <tr class="headers">
+                    <td>Wallet</td>
+                    <td>Token</td>
+                    <td>Symbol</td>
+                    <td>Amount</td>
+                    <td>Price</td>
+                     <td>Current Price</td>
+                     <td>Change</td>
                 <!--     <td>Profit</td> -->
                 <!--     <td>Profitabillity</td> -->
                 </tr>
@@ -25,10 +25,10 @@
                     <td><a href="https://etherscan.io/address/{{ .Swap.Wallet }}">{{ .Wallet }}</a></td>
                     <td><a href="https://dex.guru/token/{{ .Swap.TokenAddr }}-eth">{{ .TokenAddr }}</a></td>
                     <td>{{ .Symbol }}</td>
-                    <td>{{ .Value }}</td>
+                    <td>{{ .Value }} ETH</td>
                     <td>{{ .Price }} ETH</td>
                     <td>{{ .CurrentPrice  }} ETH</td>
-                    <td>{{ .Diff }}%</td>
+                    <td>{{ .Diff }}x</td>
                 </tr>
                 {{ end }}
             </table>
