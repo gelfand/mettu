@@ -2,4 +2,3 @@
 database
 *.proto
 certs/*
-website
