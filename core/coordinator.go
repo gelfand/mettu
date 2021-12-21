@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gelfand/log"
 	abintr "github.com/gelfand/mettu/internal/abi"
+	"github.com/gelfand/mettu/lib"
 
 	ethclient "github.com/gelfand/mettu/internal/ethclient"
 	"github.com/gelfand/mettu/repo"
@@ -69,7 +70,7 @@ func NewCoordinator(ctx context.Context, dbPath string, rpcAddr string) (*Coordi
 		txsChan:   make(chan []*types.Transaction),
 		exitCh:    make(chan struct{}, 1),
 	}
-	fmt.Println(c.exchanges)
+	fmt.Println(len(c.exchanges))
 	return c, tx.Commit()
 }
 
@@ -79,7 +80,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 	defer c.lock.Unlock()
 	tx, err := c.db.BeginRw(ctx)
 	if err != nil {
-		return fmt.Errorf("Unexpected error: could not begin database transaction: %w", err)
+		return fmt.Errorf("unexpected error: could not begin database transaction: %w", err)
 	}
 	defer tx.Rollback()
 
@@ -145,6 +146,11 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 			log.Debug("Unable to decode transaction", "err", err)
 			continue
 		}
+		factoryAddr, err := c.client.FactoryAt(*txn.To())
+		if err != nil {
+			log.Debug(err.Error())
+			continue
+		}
 
 		var tokens []repo.Token
 		for _, tokenAddr := range txData.Path {
@@ -169,7 +175,32 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 			}
 			tokens = append(tokens, token)
 		}
+
 		tokenOut := tokens[len(tokens)-1]
+		reserves, err := c.client.GetReservesPath(factoryAddr, txData.Path)
+		if err != nil {
+			log.Debug(err.Error())
+			continue
+		}
+		price := lib.CalculatePrice(tokenOut.Denominator(), reserves)
+
+		ok, err = c.db.HasToken(tx, tokenOut.Address)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			tokenOut.Price = price
+		} else {
+			var tOut repo.Token
+			tOut, err = c.db.PeekToken(tx, tokenOut.Address)
+			if err != nil {
+				return err
+			}
+			if tOut.Price.Cmp(common.Big0) == 0 {
+				tokenOut.Price = price
+			}
+		}
+
 		tokenOut.TotalBought = new(big.Int).Add(tokenOut.TotalBought, txn.Value())
 		tokenOut.TimesBought++
 		tokens[len(tokens)-1] = tokenOut
@@ -198,37 +229,25 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 
 		acc.TotalSpent = new(big.Int).Add(acc.TotalSpent, txn.Value())
 
-		if err := c.db.PutAccount(tx, acc); err != nil {
+		if err = c.db.PutAccount(tx, acc); err != nil {
 			return fmt.Errorf("unable to put updated account data: %w", err)
 		}
 
-		if err := c.db.PutPattern(tx, pattern); err != nil {
+		if err = c.db.PutPattern(tx, pattern); err != nil {
 			return fmt.Errorf("unable to put updated pattern data: %w", err)
 		}
 
-		factoryAddr, err := c.client.FactoryAt(*txn.To())
-		if err != nil {
-			log.Debug(err.Error())
-			continue
-		}
-
-		var price *big.Int
-		price, err = c.client.PriceAt(factoryAddr, tokens)
-		if err != nil {
-			log.Debug("Unable to retrieve price of: %v, err: %w", tokenOut, err)
-			price = big.NewInt(1)
-		}
 		s := repo.Swap{
 			TxHash:    txn.Hash(),
 			Wallet:    from,
 			TokenAddr: tokenOut.Address,
+			Price:     price,
 			Path:      txData.Path,
 			Factory:   factoryAddr,
-			Price:     price,
 			Value:     txn.Value(),
 		}
 
-		if err := c.db.PutSwap(tx, s); err != nil {
+		if err = c.db.PutSwap(tx, s); err != nil {
 			return fmt.Errorf("unable to put swap record: %w", err)
 		}
 

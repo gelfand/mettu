@@ -15,6 +15,7 @@ type Token struct {
 	Address     common.Address
 	Symbol      string
 	Decimals    int64
+	Price       *big.Int
 	TotalBought *big.Int
 	TimesBought int
 }
@@ -29,8 +30,9 @@ type _token struct {
 	Symbol  string
 	// Amount is stored as bytes.
 	Decimals    int64
-	TotalBought []byte
 	TimesBought int
+	Price       []byte
+	TotalBought []byte
 }
 
 // PutToken puts Token object into the storage.
@@ -38,9 +40,13 @@ func (db *DB) PutToken(tx kv.RwTx, t Token) error {
 	tokenVal := _token{
 		Address:     t.Address,
 		Symbol:      t.Symbol,
-		TimesBought: t.TimesBought,
 		Decimals:    t.Decimals,
+		TimesBought: t.TimesBought,
+		Price:       big.NewInt(0).Bytes(),
 		TotalBought: t.TotalBought.Bytes(),
+	}
+	if t.Price != nil {
+		tokenVal.Price = t.Price.Bytes()
 	}
 
 	var buf bytes.Buffer
@@ -74,9 +80,10 @@ func (db *DB) PeekToken(tx kv.Tx, addr common.Address) (Token, error) {
 	t := Token{
 		Address:     tokenVal.Address,
 		Symbol:      tokenVal.Symbol,
-		TimesBought: tokenVal.TimesBought,
 		Decimals:    tokenVal.Decimals,
 		TotalBought: new(big.Int).SetBytes(tokenVal.TotalBought),
+		TimesBought: tokenVal.TimesBought,
+		Price:       new(big.Int).SetBytes(tokenVal.Price),
 	}
 	return t, nil
 }
@@ -92,9 +99,10 @@ func (db *DB) AllTokens(tx kv.Tx) ([]Token, error) {
 		t := Token{
 			Address:     tokenVal.Address,
 			Symbol:      tokenVal.Symbol,
-			TimesBought: tokenVal.TimesBought,
 			Decimals:    tokenVal.Decimals,
+			Price:       new(big.Int).SetBytes(tokenVal.Price),
 			TotalBought: new(big.Int).SetBytes(tokenVal.TotalBought),
+			TimesBought: tokenVal.TimesBought,
 		}
 		tokens = append(tokens, t)
 
@@ -120,6 +128,7 @@ func (db *DB) AllTokensMap(tx kv.Tx) (map[common.Address]Token, error) {
 			TimesBought: tokenVal.TimesBought,
 			Decimals:    tokenVal.Decimals,
 			TotalBought: new(big.Int).SetBytes(tokenVal.TotalBought),
+			Price:       new(big.Int).SetBytes(tokenVal.Price),
 		}
 		tokens[tokenVal.Address] = t
 

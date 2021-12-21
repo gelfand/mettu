@@ -87,6 +87,16 @@ func (db *DB) FlushBucket(tx kv.RwTx, table string) error {
 	return tx.ClearBucket(table)
 }
 
+func (db *DB) Migrate(tx kv.RwTx) error {
+	for i := range kvTables {
+		if err := tx.ClearBucket(kvTables[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // func (db *DB) InsertToken(ctx context.Context) error {
 // 	tx, err := db.d.BeginTx(ctx, &sql.TxOptions{ReadOnly: false})
 // 	if err != nil {

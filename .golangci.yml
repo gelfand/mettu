@@ -12,7 +12,7 @@ linters:
     - wsl
     - scopelint
     - forbidigo
-      #- gomnd
+    - gomnd
     - interfacer
     - golint
     - maligned

@@ -12,7 +12,11 @@ import (
 	"github.com/gelfand/mettu/uniswap/router"
 )
 
-var ErrUnknownMethod = errors.New("unknown transaction method")
+var (
+	ErrUnknownMethod            = errors.New("unknown transaction method")
+	ErrInsufficientInputAmount  = errors.New("insufficient input amount")
+	ErrInsufficientOutputAmount = errors.New("insufficient output amount")
+)
 
 var (
 	swapExactETHForTokens *abi.Method
@@ -50,7 +54,14 @@ func Decode(tx *types.Transaction) (TxDat, error) {
 		}
 
 		amountIn := tx.Value()
+		if amountIn.Cmp(common.Big0) == 0 {
+			return TxDat{}, ErrInsufficientInputAmount
+		}
+
 		amountOut := inputData["amountOutMin"].(*big.Int)
+		if amountOut.Cmp(common.Big0) == 0 {
+			return TxDat{}, ErrInsufficientOutputAmount
+		}
 
 		path := inputData["path"].([]common.Address)
 		tokenIn := path[0]
@@ -70,7 +81,14 @@ func Decode(tx *types.Transaction) (TxDat, error) {
 		}
 
 		amountIn := tx.Value()
+		if amountIn.Cmp(common.Big0) == 0 {
+			return TxDat{}, ErrInsufficientInputAmount
+		}
+
 		amountOut := inputData["amountOut"].(*big.Int)
+		if amountOut.Cmp(common.Big0) == 0 {
+			return TxDat{}, ErrInsufficientOutputAmount
+		}
 
 		path := inputData["path"].([]common.Address)
 		tokenIn := path[0]
