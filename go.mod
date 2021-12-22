@@ -4,10 +4,9 @@ go 1.17
 
 require (
 	github.com/ethereum/go-ethereum v1.10.13
-	github.com/gelfand/log v0.0.0-20211212114338-f088eb233ff6
+	github.com/go-chi/chi/v5 v5.0.0
 	github.com/google/go-cmp v0.5.7-0.20211207210118-3242228551a7
 	github.com/jackc/pgx/v4 v4.14.1
-	github.com/jmoiron/sqlx v1.3.4
 	github.com/ledgerwatch/erigon-lib v0.0.0-20211206140018-b06f3cec6bfb
 	github.com/ugorji/go/codec v1.1.13
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d

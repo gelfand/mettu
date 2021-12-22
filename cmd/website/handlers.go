@@ -6,7 +6,7 @@ import (
 )
 
 // walletsHandler atomicly loads cached response for exchanges and writes it.
-func walletsHandler(w http.ResponseWriter, _ *http.Request) {
+func walletsHandler(w http.ResponseWriter, r *http.Request) {
 	v, ok := walletsDat.Load().([]byte)
 	if !ok {
 		return
@@ -20,10 +20,10 @@ func exchangesHandler(w http.ResponseWriter, _ *http.Request) {
 	if !ok {
 		return
 	}
+
 	w.Write(v)
 }
 
-// patternsHandler atomicly loads cached response for patterns and writes it.
 func patternsHandler(w http.ResponseWriter, _ *http.Request) {
 	v, ok := patternsDat.Load().([]byte)
 	if !ok {
@@ -50,8 +50,15 @@ func swapsHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Write(v)
 }
 
+func authHandler(w http.ResponseWriter, r *http.Request) {
+	f, _ := os.Open("./static/login.html")
+	buf := make([]byte, 8192)
+	n, _ := f.Read(buf)
+	w.Write(buf[:n])
+}
+
 // mainHandler is router handler.
-func mainHandler(w http.ResponseWriter, _ *http.Request) {
+func mainHandler(w http.ResponseWriter, r *http.Request) {
 	f, _ := os.Open("./static/index.html")
 	buf := make([]byte, 8192)
 	n, _ := f.Read(buf)

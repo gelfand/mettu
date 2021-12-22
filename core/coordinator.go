@@ -3,14 +3,13 @@ package core
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/big"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/gelfand/log"
 	abintr "github.com/gelfand/mettu/internal/abi"
 	"github.com/gelfand/mettu/lib"
 
@@ -95,7 +94,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 		from, _ := types.Sender(c.signer, txn)
 		cex, ok := c.exchanges[from]
 		if ok {
-			log.Info("Detected new CEX transfer", "To", *txn.To(), "Value", new(big.Int).Div(txn.Value(), big.NewInt(1e18)).String()+" ETH", "From", cex.Name)
+			log.Printf("Detected new CEX transfer, to: %v, from: %v, value: %v ETH", *txn.To(), cex.Name, new(big.Int).Div(txn.Value(), big.NewInt(1e18)))
 
 			ok, err = c.db.HasAccount(tx, *txn.To())
 			if err != nil {
@@ -143,18 +142,15 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 
 		txData, err := abintr.Decode(txn)
 		if err != nil {
-			log.Debug("Unable to decode transaction", "err", err)
 			continue
 		}
 		factoryAddr, err := c.client.FactoryAt(*txn.To())
 		if err != nil {
-			log.Debug(err.Error())
 			continue
 		}
 
 		var tokens []repo.Token
 		for _, tokenAddr := range txData.Path {
-			log.Info("Token", "address", tokenAddr)
 			ok, err = c.db.HasToken(tx, tokenAddr)
 			if err != nil {
 				return fmt.Errorf("could not check if token exists in the db: %w", err)
@@ -179,7 +175,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 		tokenOut := tokens[len(tokens)-1]
 		reserves, err := c.client.GetReservesPath(factoryAddr, txData.Path)
 		if err != nil {
-			log.Debug(err.Error())
+			log.Printf("could not retrieve reserves: %w, path: %v", err, txData.Path)
 			continue
 		}
 		price := lib.CalculatePrice(tokenOut.Denominator(), reserves)
@@ -255,21 +251,21 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 			if err = c.db.PutToken(tx, token); err != nil {
 				return fmt.Errorf("unable to put updated token data: %w", err)
 			}
-			log.Info("Successfully updated Token statistics for", "addr", token.Address, "symbol", token.Symbol, "totalBought", token.TotalBought.String()+" ETH", "timesBought", token.TimesBought)
+			log.Printf("INFO: Successfully updated %s: %v", token.Symbol, token.Address)
 		}
 	}
 	return tx.Commit()
 }
 
 func (c *Coordinator) proccessorLifecycle(ctx context.Context) {
-	log.Info("Successfully started Processor lifecycle")
+	log.Printf("Successfully started Proccessor lifecycle")
 	cycleCounter := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case txs := <-c.txsChan:
-			log.Info("Running lifecycle", "cycle", cycleCounter)
+			log.Printf("Cycle: %d", cycleCounter)
 			if err := c.processTransactions(ctx, txs); err != nil {
 				panic(err)
 			}
@@ -278,28 +274,25 @@ func (c *Coordinator) proccessorLifecycle(ctx context.Context) {
 	}
 }
 
-func (c *Coordinator) Run(ctx context.Context) {
+func (c *Coordinator) Run(ctx context.Context) error {
 	defer c.db.Close()
 	go c.proccessorLifecycle(ctx)
 
 	sub, err := c.client.SubscribeNewHead(ctx, c.headersCh)
 	if err != nil {
-		log.Error("unable to subscribe new headers, exiting", "err", err)
-		os.Exit(1)
+		return err
 	}
 
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return nil
 		case err := <-sub.Err():
-			log.Error("unable to handle header subscription, exiting", "err", err)
-			os.Exit(1)
+			fmt.Errorf("unable to handle header subscription: %w", err)
 		case header := <-c.headersCh:
 			ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			block, err := c.client.BlockByHash(ctxWithTimeout, header.Hash())
 			if err != nil {
-				log.Debug("Unable to retrieve block by hash", "err", err)
 				cancel()
 				continue
 			}
@@ -309,18 +302,3 @@ func (c *Coordinator) Run(ctx context.Context) {
 		}
 	}
 }
-
-// func (c *Coordinator) dumpCache() {
-// 	f, err := os.Create("seen_accounts.json")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer f.Close()
-// 	enc := json.NewEncoder(f)
-// 	c.lock.Lock()
-
-// 	if err := enc.Encode(c.seenAccounts); err != nil {
-// 		panic(err)
-// 	}
-// 	c.lock.Unlock()
-// }

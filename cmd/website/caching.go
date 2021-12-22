@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"log"
 	"math/big"
 	"os"
 	"sort"
@@ -43,9 +44,8 @@ var (
 	exchangesDat atomic.Value
 )
 
-func caching(ctx context.Context, db *repo.DB) {
-	ticker := time.NewTicker(1 * time.Minute)
-
+func runCaching(ctx context.Context, db *repo.DB) {
+	ticker := time.NewTicker(5 * time.Minute)
 	wg := sync.WaitGroup{}
 
 	cache := func(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) error {
@@ -78,15 +78,13 @@ func cacheTokens(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	tx, err := db.BeginRo(ctx)
 	if err != nil {
-		handleErr(&tokensDat, "could not begin read-only transaction", err)
-		return
+		log.Fatal(err)
 	}
 	defer tx.Rollback()
 
 	swaps, err := db.AllSwaps(tx)
 	if err != nil {
-		handleErr(&tokensDat, "could not retrieve all swaps data", err)
-		return
+		log.Fatal(err)
 	}
 
 	tokens := make(map[common.Address]repo.Swap)
@@ -143,25 +141,9 @@ func cacheTokens(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		i++
 	}
 	if err := tx.Commit(); err != nil {
-		handleErr(&tokensDat, "could not commit read-only transaction", err)
-		return
+		log.Fatalf("could not commit read-only transaction: %v", err)
 	}
 
-	// var tokensData []tokenData
-
-	// for _, token := range t {
-	//        r, err := client.GetReserves()
-
-	// 	tData := tokenData{
-	// 		Token:       token,
-	// 		Price:       priceRat.FloatString(6),
-	// 		TotalBought: util.NormalizePrecision(token.TotalBought),
-	// 		CurrPrice:     ,
-	// 		Change:      "",
-	// 	}
-	// }
-
-	defer tx.Rollback()
 	sort.SliceStable(tt, func(i, j int) bool {
 		diffRat0, diffRat1 := tt[i].DiffRat, tt[j].DiffRat
 		if diffRat0 == nil || diffRat1 == nil {
@@ -174,10 +156,8 @@ func cacheTokens(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	var buf bytes.Buffer
 	if err := tokensTmpl.Execute(&buf, tt); err != nil {
-		handleErr(&tokensDat, "could not execute token template", err)
-		return
+		log.Fatalf("could not execute html template: %v", err)
 	}
-
 	tokensDat.Store(buf.Bytes())
 }
 
@@ -187,26 +167,22 @@ func cacheExchanges(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	tx, err := db.BeginRo(ctx)
 	if err != nil {
-		handleErr(&exchangesDat, "could not begin read-only transaction", err)
-		return
+		log.Fatalf("could not begin read-only transaction: %v", err)
 	}
 	defer tx.Rollback()
 
 	exchanges, err := db.AllExchanges(tx)
 	if err != nil {
-		handleErr(&exchangesDat, "could not retrieve all exchanges from the db", err)
-		return
+		log.Fatalf("could not retrieve all exchanges from the db: %v", err)
 	}
 	if err := tx.Commit(); err != nil {
-		handleErr(&exchangesDat, "could not commit read-only transaction", err)
+		log.Fatalf("could not commit read-only transaction: %v", err)
 	}
 
 	var buf bytes.Buffer
 	if err := exchangesTmpl.Execute(&buf, exchanges); err != nil {
-		handleErr(&exchangesDat, "could not execute exchanges template", err)
-		return
+		log.Fatalf("could not execute exchanges template: %v", err)
 	}
-
 	exchangesDat.Store(buf.Bytes())
 }
 
@@ -215,20 +191,17 @@ func cacheWallets(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	tx, err := db.BeginRo(ctx)
 	if err != nil {
-		handleErr(&walletsDat, "could not begin read-only transaction", err)
-		return
+		log.Fatalf("could not begin read-only transaction: %v", err)
 	}
 	defer tx.Rollback()
 
 	wallets, err := db.AllAccounts(tx)
 	if err != nil {
-		handleErr(&walletsDat, "could not retrieve all accounts from the db", err)
-		return
+		log.Fatalf("could not retrieve all accounts from the database: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		handleErr(&walletsDat, "could not commit read-only transaction", err)
-		return
+		log.Fatal(err)
 	}
 
 	sort.SliceStable(wallets, func(i, j int) bool {
@@ -243,8 +216,7 @@ func cacheWallets(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	var buf bytes.Buffer
 	if err := walletsTmpl.Execute(&buf, wallets); err != nil {
-		handleErr(&walletsDat, "could not execute wallets template", err)
-		return
+		log.Fatalf("could not execute wallets template: %v", err)
 	}
 
 	walletsDat.Store(buf.Bytes())
@@ -255,20 +227,17 @@ func cachePatterns(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	tx, err := db.BeginRo(ctx)
 	if err != nil {
-		handleErr(&patternsDat, "could not begin read-only transaction", err)
-		return
+		log.Fatalf("could not begin read-only transaction: %v", err)
 	}
 	defer tx.Rollback()
 
 	patterns, err := db.AllPatternsData(tx)
 	if err != nil {
-		handleErr(&patternsDat, "could not retieve all patterns data", err)
-		return
+		log.Fatalf("could not retieve all patterns data: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		handleErr(&patternsDat, "could not commit read-only transaction", err)
-		return
+		log.Fatalf("could not commit read-only transaction: %v", err)
 	}
 
 	for i := range patterns {
@@ -281,7 +250,7 @@ func cachePatterns(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	var buf bytes.Buffer
 	if err := patternsTmpl.Execute(&buf, patterns); err != nil {
-		handleErr(&patternsDat, "could not execute patterns template", err)
+		log.Fatalf("could not execute patterns template: %v", err)
 	}
 
 	patternsDat.Store(buf.Bytes())
@@ -292,19 +261,17 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 	tx, err := db.BeginRo(ctx)
 	if err != nil {
-		handleErr(&swapsDat, "could not begin read-only transaction", err)
-		return
+		log.Fatalf("could not begin read-only transaction: %v", err)
 	}
 	defer tx.Rollback()
 
 	tokens, err := db.AllTokensMap(tx)
 	if err != nil {
-		panic(err)
+		log.Fatalf("could not retrieve all tokens: %v", err)
 	}
 	swaps, err := db.AllSwaps(tx)
 	if err != nil {
-		handleErr(&swapsDat, "could not retrieve swaps data from the kv storage", err)
-		return
+		log.Fatalf("could not retrieve swaps data from the kv storage: %v", err)
 	}
 
 	type swapData struct {
@@ -322,6 +289,7 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 	swapsData := make([]swapData, len(swaps))
 	for i, swap := range swaps {
 		token := tokens[swap.TokenAddr]
+		fmt.Println(token)
 
 		v := swapData{
 			TokenAddr:    swap.TokenAddr.String(),
@@ -335,7 +303,7 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 
 		reserves, err := client.GetReservesPath(swap.Factory, swap.Path)
 		if err != nil {
-			handleErr(&swapsDat, "could not get reserves", err)
+			log.Fatalf("could not retrieve reserves for: %v, err: %v", swap.Path, err)
 		}
 
 		numerator := new(big.Rat).SetInt(swap.Price)
@@ -357,21 +325,7 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		} else {
 			diff = new(big.Rat).Set(rat0)
 		}
-		//
-		// diff := new(big.Int).Mul(Div(sum, sumDiv)
-		// diff = diff.Mul(diff, )
-		// if price.Cmp(swap.Price) > 0 {
-		// 	increase := new(big.Int).Sub(price, swap.Price)
-		// 	den := new(big.Int).Mul(swap.Price, big.NewInt(100))
-		// 	den = den.Mul(den, token.Denominator())
-		// 	diff = new(big.Int).Div(increase, den)
-		// } else {
-		// 	decrease := new(big.Int).Sub(swap.Price, price)
-		// 	den := new(big.Int).Mul(swap.Price, big.NewInt(100))
-		// 	den = den.Mul(den, token.Denominator())
-		// 	diff = new(big.Int).Div(decrease, den)
-		// }
-		fmt.Println(diff)
+
 		v.Diff = diff.FloatString(2)
 		v.DiffRat = diff
 
@@ -382,25 +336,9 @@ func cacheSwaps(ctx context.Context, db *repo.DB, wg *sync.WaitGroup) {
 		return swapsData[i].DiffRat.Cmp(swapsData[j].DiffRat) > 0
 	})
 
-	// swaps, err = client.FetchSwapsData(swaps)
-	// if err != nil {
-	// 	handleErr(&swapsDat, "could not fetch swaps data", err)
-	// 	return
-	// }
-
-	// for i := range swaps {
-	// 	util.NormalizePrecision(swaps[i].Profit)
-	// 	util.NormalizePrecision(swaps[i].Value)
-	// }
-
-	// sort.SliceStable(swaps, func(i, j int) bool {
-	// 	return swaps[i].Profitability > swaps[j].Profitability
-	// })
-
 	var buf bytes.Buffer
 	if err := swapsTmpl.Execute(&buf, swapsData); err != nil {
-		handleErr(&swapsDat, "could not execute swaps template", err)
-		return
+		log.Fatalf("could not execute swaps template: %v", err)
 	}
 
 	swapsDat.Store(buf.Bytes())

@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 
-	"github.com/gelfand/log"
 	"github.com/gelfand/mettu/core"
 	_ "github.com/gelfand/mettu/internal/abi"
 	"github.com/gelfand/mettu/repo"
@@ -37,17 +37,15 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
-	os.UserHomeDir()
-
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Error("Could not create CPU profile", "err", err)
+			log.Fatal(err)
 		}
 		defer f.Close() // error handling omitted for example
 		runtime.SetCPUProfileRate(1000)
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Error("Could not start CPU profile", "err", err)
+			log.Fatal(err)
 		}
 		defer pprof.StopCPUProfile()
 	}
@@ -57,23 +55,20 @@ func main() {
 
 	dbPath, err := filepath.Abs(*datadir)
 	if err != nil {
-		log.Error("Invalid path", "err", err)
-		return
+		log.Fatalf("invalid path: %v", err)
 	}
 
 	if *doInit {
 		if err := initDB(ctx, dbPath); err != nil {
-			log.Error("Unable to initialize new database", "err", err)
+			log.Fatalf("Unable to initialize new database: %v", err)
 			return
 		}
+		log.Printf("Successfully initialized new db")
 	}
-
-	log.Info("Successfully initialized new db")
 
 	coordinator, err := core.NewCoordinator(ctx, dbPath, *rpcAddr)
 	if err != nil {
-		log.Error("Unable to create new Coordinator", "err", err)
-		return
+		log.Fatalf("Unable to create new Coordinator: %v", err)
 	}
 	coordinator.Run(ctx)
 	<-ctx.Done()
@@ -81,12 +76,12 @@ func main() {
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
 		if err != nil {
-			log.Error("could not create memory profile", "err", err)
+			log.Fatal(err)
 		}
 		defer f.Close() // error handling omitted for example
 		runtime.GC()    // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Error("could not write memory profile", "err", err)
+			log.Fatal(err)
 		}
 	}
 }

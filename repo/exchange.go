@@ -37,6 +37,7 @@ func (db *DB) PeekExchange(tx kv.Tx, addr common.Address) (Exchange, error) {
 	}, nil
 }
 
+// AllExchanges returns all exchanges stored in the exchangeStorage.
 func (db *DB) AllExchanges(tx kv.Tx) ([]Exchange, error) {
 	var exchanges []Exchange
 	if err := tx.ForEach(exchangeStorage, []byte{}, func(k, v []byte) error {
@@ -53,6 +54,7 @@ func (db *DB) AllExchanges(tx kv.Tx) ([]Exchange, error) {
 	return exchanges, nil
 }
 
+// AllExchangesMap returns all exchanges in map being mapped to their addresses.
 func (db *DB) AllExchangesMap(tx kv.Tx) (map[common.Address]Exchange, error) {
 	exchanges := make(map[common.Address]Exchange)
 	if err := tx.ForEach(exchangeStorage, []byte{}, func(k, v []byte) error {

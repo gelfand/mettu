@@ -2,11 +2,9 @@ html {
     font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
     text-align: center;
 }
-
 .centerswaps {
     font-size: 90%;
 }
-
 td {
     padding: 0 25px 0 0;
 }
@@ -14,7 +12,3 @@ td {
 tr.headers {
     font-weight: 600;
 }
-/* .center { */
-/*   margin: auto; */
-/*   width: 50%; */
-/* } */
