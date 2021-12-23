@@ -11,9 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	abintr "github.com/gelfand/mettu/internal/abi"
+	"github.com/gelfand/mettu/internal/ethclient"
 	"github.com/gelfand/mettu/lib"
-
-	ethclient "github.com/gelfand/mettu/internal/ethclient"
 	"github.com/gelfand/mettu/repo"
 )
 
@@ -175,7 +174,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 		tokenOut := tokens[len(tokens)-1]
 		reserves, err := c.client.GetReservesPath(factoryAddr, txData.Path)
 		if err != nil {
-			log.Printf("could not retrieve reserves: %w, path: %v", err, txData.Path)
+			log.Printf("could not retrieve reserves: %v, path: %v", err, txData.Path)
 			continue
 		}
 		price := lib.CalculatePrice(tokenOut.Denominator(), reserves)
@@ -288,7 +287,7 @@ func (c *Coordinator) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case err := <-sub.Err():
-			fmt.Errorf("unable to handle header subscription: %w", err)
+			return fmt.Errorf("unable to handle header subscription: %w", err)
 		case header := <-c.headersCh:
 			ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			block, err := c.client.BlockByHash(ctxWithTimeout, header.Hash())

@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html>
-    <link rel="stylesheet" href="../main.css">
+  <link rel="stylesheet" href="../main.css" />
   <head>
-      <title>Patterns</title>
-     <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="static/css/style.css" rel="stylesheet">
-
+    <title>Patterns</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="static/css/style.css" rel="stylesheet" />
   </head>
   <body>
-      <div class="center">
-       <table>
+    <div class="center">
+      <table>
         <tr class="headers">
-            <td>Token</td>
-            <td>Symbol</td>
-            <td>Total Amount</td>
-            <td>Exchange</td>
-            <td>Counter</td>
+          <td>Token</td>
+          <td>Symbol</td>
+          <td>Total Amount</td>
+          <td>Exchange</td>
+          <td>Counter</td>
         </tr>
         {{ range . }}
         <tr>
-            <td><a href="https://dex.guru/token/{{ .Token.Address }}-eth">{{ .Token.Address}}</a></td>
-            <td>{{ .Token.Symbol }}</td>
-            <td>{{ .Value }} ETH</td>
-            <td>{{ .Exchange }}</td>
-            <td>{{ .Counter }}</td>
+          <td>
+            <a href="https://dex.guru/token/{{ .Token.Address }}-eth"
+              >{{ .Token.Address}}</a
+            >
+          </td>
+          <td>{{ .Token.Symbol }}</td>
+          <td>{{ .Value }} ETH</td>
+          <td>{{ .Exchange }}</td>
+          <td>{{ .Counter }}</td>
         </tr>
         {{ end }}
-        </table>
-      </div>
+      </table>
+    </div>
   </body>
 </html>

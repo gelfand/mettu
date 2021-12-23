@@ -1,36 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Tokens</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="static/css/style.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="center">
-    <table>
-    <tr class="headers">
-        <td>Address</td>
-        <td>Symbol</td>
-        <td>Detected At</td>
-        <td>Price</td>
-        <td>Total Bought</td>
-        <td>Times Bought</td>
-        <td>Change</td>
-    </tr>
-    {{ range . }}
-    <tr>
-        <td><a href="https://dex.guru/token/{{ .Token.Address }}-eth">{{ .Token.Address }}</a></td>
-        <td>{{ .Token.Symbol }}</td>
-                
-        <td>{{ .Price }} ETH</td>
-        <td>{{ .CurrPrice }} ETH</td>
-        <td>{{ .Token.TotalBought }} ETH</td>
-        <td>{{ .Token.TimesBought }}</td>
-        <td>{{ .Diff }}x</td>
-    </tr>
-    {{ end }}
-    </table>
-        </div>
-    </body>
+  <head>
+    <title>Tokens</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="static/css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="center">
+      <table>
+        <tr class="headers">
+          <td>Address</td>
+          <td>Symbol</td>
+          <td>Detected At</td>
+          <td>Price</td>
+          <td>Total Bought</td>
+          <td>Times Bought</td>
+          <td>Change</td>
+        </tr>
+        {{ range . }}
+        <tr>
+          <td>
+            <a href="https://dex.guru/token/{{ .Token.Address }}-eth"
+              >{{ .Token.Address }}</a
+            >
+          </td>
+          <td>{{ .Token.Symbol }}</td>
+
+          <td>{{ .Price }} ETH</td>
+          <td>{{ .CurrPrice }} ETH</td>
+          <td>{{ .Token.TotalBought }} ETH</td>
+          <td>{{ .Token.TimesBought }}</td>
+          <td>{{ .Diff }}x</td>
+        </tr>
+        {{ end }}
+      </table>
+    </div>
+  </body>
 </html>

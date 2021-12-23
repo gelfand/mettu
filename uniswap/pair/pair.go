@@ -4,6 +4,7 @@
 package pair
 
 import (
+	"errors"
 	"math/big"
 	"strings"
 
@@ -24,6 +25,10 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
+)
+
+var (
+	ErrInvalidPair = errors.New("invalid pair")
 )
 
 // PairABI is the input ABI used to generate the binding from.
@@ -421,6 +426,13 @@ func (_Pair *PairCaller) GetReserves(opts *bind.CallOpts) (struct {
 		Reserve1           *big.Int
 		BlockTimestampLast uint32
 	})
+	if len(out) < 3 {
+		return struct {
+			Reserve0           *big.Int
+			Reserve1           *big.Int
+			BlockTimestampLast uint32
+		}{}, ErrInvalidPair
+	}
 
 	outstruct.Reserve0 = out[0].(*big.Int)
 	outstruct.Reserve1 = out[1].(*big.Int)

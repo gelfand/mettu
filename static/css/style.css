@@ -1,14 +1,15 @@
 html {
-    font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-    text-align: center;
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
+  text-align: center;
 }
 .centerswaps {
-    font-size: 90%;
+  font-size: 90%;
 }
 td {
-    padding: 0 25px 0 0;
+  padding: 0 25px 0 0;
 }
 
 tr.headers {
-    font-weight: 600;
+  font-weight: 600;
 }

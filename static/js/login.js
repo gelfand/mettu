@@ -5,10 +5,10 @@ setTimeout(function () {
     field.oninput = function () {
         form.value = field.value;
     };
-    // btn.onclick = function() {
-    //     window.location.replace('https://alphafeed.xyz/');
-    //     window.location.assign('https://alphafeed.xyz/');
-    //     window.location.href = 'https://alphafeed.xyz/';
-    //     document.location.href = '/';
-    // }
+    btn.onclick = function () {
+        window.location.replace("https://alphafeed.xyz/");
+        window.location.assign("https://alphafeed.xyz/");
+        window.location.href = "https://alphafeed.xyz/";
+        document.location.href = "/";
+    };
 }, 50);

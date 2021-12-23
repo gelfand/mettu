@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Exchanges</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="static/css/style.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="center">
-            <table>
-                <tr class="headers">  
-                    <td>Name</td>
-                    <td>Address</td>
-                </tr>
-                {{ range .}}
-                <tr> 
-                    <td>{{ .Name }}</td> 
-                    <td><a href="https://etherscan.io/address/{{ .Address }}">{{ .Address }}</a></td> 
-                </tr>
-                {{ end }}
-            </table>
-        </div>
-    </body>
+  <head>
+    <title>Exchanges</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="static/css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="center">
+      <table>
+        <tr class="headers">
+          <td>Name</td>
+          <td>Address</td>
+        </tr>
+        {{ range .}}
+        <tr>
+          <td>{{ .Name }}</td>
+          <td>
+            <a href="https://etherscan.io/address/{{ .Address }}"
+              >{{ .Address }}</a
+            >
+          </td>
+        </tr>
+        {{ end }}
+      </table>
+    </div>
+  </body>
 </html>

@@ -1,37 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title></title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="static/css/style.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class="centerswaps">
-            <table>
-                <tr class="headers">
-                    <td>Wallet</td>
-                    <td>Token</td>
-                    <td>Symbol</td>
-                    <td>Amount</td>
-                    <td>Price</td>
-                     <td>Current Price</td>
-                     <td>Change</td>
-                <!--     <td>Profit</td> -->
-                <!--     <td>Profitabillity</td> -->
-                </tr>
-                {{ range  . }}
-                <tr>
-                    <td><a href="https://etherscan.io/address/{{ .Swap.Wallet }}">{{ .Wallet }}</a></td>
-                    <td><a href="https://dex.guru/token/{{ .Swap.TokenAddr }}-eth">{{ .TokenAddr }}</a></td>
-                    <td>{{ .Symbol }}</td>
-                    <td>{{ .Value }} ETH</td>
-                    <td>{{ .Price }} ETH</td>
-                    <td>{{ .CurrentPrice  }} ETH</td>
-                    <td>{{ .Diff }}x</td>
-                </tr>
-                {{ end }}
-            </table>
-        </div>
-    </body>
+  <head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="static/css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="centerswaps">
+      <table>
+        <tr class="headers">
+          <td>Wallet</td>
+          <td>Token</td>
+          <td>Symbol</td>
+          <td>Amount</td>
+          <td>Price</td>
+          <td>Current Price</td>
+          <td>Change</td>
+          <!--     <td>Profit</td> -->
+          <!--     <td>Profitabillity</td> -->
+        </tr>
+        {{ range . }}
+        <tr>
+          <td>
+            <a href="https://etherscan.io/address/{{ .Swap.Wallet }}"
+              >{{ .Wallet }}</a
+            >
+          </td>
+          <td>
+            <a href="https://dex.guru/token/{{ .Swap.TokenAddr }}-eth"
+              >{{ .TokenAddr }}</a
+            >
+          </td>
+          <td>{{ .Symbol }}</td>
+          <td>{{ .Value }} ETH</td>
+          <td>{{ .Price }} ETH</td>
+          <td>{{ .CurrentPrice }} ETH</td>
+          <td>{{ .Diff }}x</td>
+        </tr>
+        {{ end }}
+      </table>
+    </div>
+  </body>
 </html>
