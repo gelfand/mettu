@@ -3,13 +3,13 @@ module github.com/gelfand/mettu
 go 1.17
 
 require (
-	github.com/ethereum/go-ethereum v1.10.13
-	github.com/go-chi/chi/v5 v5.0.0
-	github.com/google/go-cmp v0.5.7-0.20211207210118-3242228551a7
+	github.com/ethereum/go-ethereum v1.10.14
+	github.com/go-chi/chi/v5 v5.0.7
+	github.com/google/go-cmp v0.5.6
 	github.com/jackc/pgx/v4 v4.14.1
-	github.com/ledgerwatch/erigon-lib v0.0.0-20211206140018-b06f3cec6bfb
-	github.com/ugorji/go/codec v1.1.13
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+	github.com/ledgerwatch/erigon-lib v0.0.0-20211222073434-bf21599d2322
+	github.com/ugorji/go/codec v1.2.6
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 )
 
 require (
@@ -18,10 +18,8 @@ require (
 	github.com/btcsuite/btcd v0.20.1-beta // indirect
 	github.com/c2h5oh/datasize v0.0.0-20200825124411-48ed595a09d2 // indirect
 	github.com/deckarep/golang-set v0.0.0-20180603214616-504e848d77ea // indirect
-	github.com/go-chi/jwtauth v1.2.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/goccy/go-json v0.3.5 // indirect
 	github.com/google/uuid v1.1.5 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -32,14 +30,8 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.9.1 // indirect
 	github.com/ledgerwatch/log/v3 v3.4.0 // indirect
-	github.com/lestrrat-go/backoff/v2 v2.0.7 // indirect
-	github.com/lestrrat-go/httpcc v1.0.0 // indirect
-	github.com/lestrrat-go/iter v1.0.0 // indirect
-	github.com/lestrrat-go/jwx v1.1.0 // indirect
-	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rjeczalik/notify v0.9.1 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect

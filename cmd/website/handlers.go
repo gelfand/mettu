@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 )
 
 // walletsHandler atomicly loads cached response for exchanges and writes it.
@@ -48,19 +47,4 @@ func swapsHandler(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	w.Write(v)
-}
-
-func authHandler(w http.ResponseWriter, r *http.Request) {
-	f, _ := os.Open("./static/login.html")
-	buf := make([]byte, 8192)
-	n, _ := f.Read(buf)
-	w.Write(buf[:n])
-}
-
-// mainHandler is router handler.
-func mainHandler(w http.ResponseWriter, r *http.Request) {
-	f, _ := os.Open("./static/index.html")
-	buf := make([]byte, 8192)
-	n, _ := f.Read(buf)
-	w.Write(buf[:n])
 }

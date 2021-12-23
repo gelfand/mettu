@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -27,7 +29,23 @@ var (
 	}
 )
 
+var homedir, _ = os.UserHomeDir()
+
+var (
+	datadir = flag.String("datadir", homedir+"/.mettu", "path to the database.")
+	cert    = flag.String("cert", homedir+"/.x509/cert.pem", "path to the certificate.")
+	certkey = flag.String("key", homedir+"/.x509/key.pem", "path to the certificate key.")
+)
+
+func usage() {
+	fmt.Fprintln(os.Stderr, "Usage of website...")
+	flag.PrintDefaults()
+}
+
 func main() {
+	flag.Usage = usage
+	flag.Parse()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	go func() {
 		<-ctx.Done()
@@ -35,11 +53,8 @@ func main() {
 	}()
 	defer cancel()
 
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-	db, err = repo.NewDB(homedir + "/.mettu/")
+	var err error
+	db, err = repo.NewDB(*datadir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,7 +79,6 @@ func main() {
 		n, _ := f.Read(buf)
 		w.Write(buf[:n])
 	})
-
 	r.Get("/exchanges", exchangesHandler)
 	r.Get("/swaps", swapsHandler)
 	r.Get("/patterns", patternsHandler)
