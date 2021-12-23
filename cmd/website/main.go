@@ -89,5 +89,5 @@ func main() {
 		Addr:    "0.0.0.0:433",
 		Handler: r,
 	}
-	log.Fatal(server.ListenAndServeTLS(homedir+"/.x509/cert.pem", homedir+"/.x509/key.pem"))
+	log.Fatal(server.ListenAndServeTLS(*cert, *certkey))
 }
