@@ -35,17 +35,17 @@ func main() {
 	}()
 	defer cancel()
 
-	// homedir, err := os.UserHomeDir()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// db, err = repo.NewDB(homedir + "/.mettu/")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer db.Close()
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	db, err = repo.NewDB(homedir + "/.mettu/")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-	// go runCaching(ctx, db)
+	go runCaching(ctx, db)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -72,8 +72,8 @@ func main() {
 	r.Get("/wallets", walletsHandler)
 
 	server := &http.Server{
-		Addr:    "127.0.0.1:8080",
+		Addr:    "0.0.0.0:433",
 		Handler: r,
 	}
-	log.Fatal(server.ListenAndServeTLS("certs/localhost.pem", "certs/localhost-key.pem"))
+	log.Fatal(server.ListenAndServeTLS(homedir+"/.x509/cert.pem", homedir+"/.x509/key.pem"))
 }
