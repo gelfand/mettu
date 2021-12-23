@@ -6,7 +6,7 @@ import (
 )
 
 // walletsHandler atomicly loads cached response for exchanges and writes it.
-func walletsHandler(w http.ResponseWriter, r *http.Request) {
+func walletsHandler(w http.ResponseWriter, _ *http.Request) {
 	v, ok := walletsDat.Load().([]byte)
 	if !ok {
 		return

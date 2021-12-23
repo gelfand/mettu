@@ -1,17 +1,17 @@
-package coordinator
+package crawler
 
 import (
 	"context"
-	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/gelfand/mettu/repo"
+	"github.com/go-chi/chi/v5"
 )
 
 type Coordinator struct {
-	Handler *http.Handler
+	r chi.Router
 
 	db *repo.DB
 	wg sync.WaitGroup
@@ -23,8 +23,21 @@ type Coordinator struct {
 	wallets   atomic.Value
 }
 
-func New() *Coordinator {
-	return &Coordinator{}
+func (c *Coordinator) ServeHTTP() {
+}
+
+func New(db *repo.DB) *Coordinator {
+	c := &Coordinator{
+		r:         chi.NewRouter(),
+		db:        db,
+		wg:        sync.WaitGroup{},
+		exchanges: atomic.Value{},
+		tokens:    atomic.Value{},
+		patterns:  atomic.Value{},
+		swaps:     atomic.Value{},
+		wallets:   atomic.Value{},
+	}
+	return c
 }
 
 func (c *Coordinator) Run(ctx context.Context) error {
