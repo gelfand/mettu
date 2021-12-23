@@ -120,10 +120,14 @@ func main() {
 	}()
 	defer cancel()
 
-	var err error
-	db, err = repo.NewDB("/Users/eugene/.mettu/")
+	homedir, err := os.UserHomeDir()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+	}
+
+	db, err = repo.NewDB(homedir + "/.mettu/")
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer db.Close()
 
