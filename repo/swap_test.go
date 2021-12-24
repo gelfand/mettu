@@ -319,16 +319,16 @@ func testDB_swap(t *testing.T) kv.RwDB {
 
 	accounts := []Account{
 		{
-			Address:       common.BytesToAddress([]byte("wallet1")),
-			TotalReceived: &big.Int{},
-			TotalSpent:    &big.Int{},
-			Exchange:      "",
+			Address:  common.BytesToAddress([]byte("wallet1")),
+			Received: &big.Int{},
+			Spent:    &big.Int{},
+			Exchange: "",
 		},
 		{
-			Address:       common.BytesToAddress([]byte("wallet2")),
-			TotalReceived: &big.Int{},
-			TotalSpent:    &big.Int{},
-			Exchange:      "",
+			Address:  common.BytesToAddress([]byte("wallet2")),
+			Received: &big.Int{},
+			Spent:    &big.Int{},
+			Exchange: "",
 		},
 	}
 

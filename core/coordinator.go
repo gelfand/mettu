@@ -20,15 +20,12 @@ type Coordinator struct {
 	// TODO: maybe make use of this lock.
 	lock sync.Mutex
 
-	db     *repo.DB
-	client *ethclient.Client
-	signer types.Signer
-
+	db        *repo.DB
+	client    *ethclient.Client
+	signer    types.Signer
 	exchanges map[common.Address]repo.Exchange
 	headersCh chan *types.Header
 	txsChan   chan []*types.Transaction
-
-	exitCh chan struct{}
 }
 
 // NewCoordinator creates new Coordinator.
@@ -66,7 +63,6 @@ func NewCoordinator(ctx context.Context, dbPath string, rpcAddr string) (*Coordi
 		exchanges: exchanges,
 		headersCh: make(chan *types.Header),
 		txsChan:   make(chan []*types.Transaction),
-		exitCh:    make(chan struct{}, 1),
 	}
 	fmt.Println(len(c.exchanges))
 	return c, tx.Commit()
@@ -105,13 +101,13 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 				if err != nil {
 					return fmt.Errorf("could not peek account: %w", err)
 				}
-				acc.TotalReceived = new(big.Int).Add(acc.TotalReceived, txn.Value())
+				acc.Received = new(big.Int).Add(acc.Received, txn.Value())
 			} else {
 				acc = repo.Account{
-					Address:       *txn.To(),
-					TotalReceived: txn.Value(),
-					TotalSpent:    big.NewInt(0),
-					Exchange:      cex.Name,
+					Address:  *txn.To(),
+					Received: txn.Value(),
+					Spent:    big.NewInt(0),
+					Exchange: cex.Name,
 				}
 			}
 
@@ -222,7 +218,7 @@ func (c *Coordinator) processTransactions(ctx context.Context, txs []*types.Tran
 		pattern.TimesOccured++
 		pattern.Value = new(big.Int).Add(pattern.Value, txn.Value())
 
-		acc.TotalSpent = new(big.Int).Add(acc.TotalSpent, txn.Value())
+		acc.Spent = new(big.Int).Add(acc.Spent, txn.Value())
 
 		if err = c.db.PutAccount(tx, acc); err != nil {
 			return fmt.Errorf("unable to put updated account data: %w", err)

@@ -42,10 +42,10 @@ func TestDB_PutAccount(t *testing.T) {
 			args: args{
 				tx: nil,
 				acc: Account{
-					Address:       common.BytesToAddress([]byte("acc0")),
-					TotalReceived: hugeNumber,
-					TotalSpent:    hugeNumber,
-					Exchange:      "Binance",
+					Address:  common.BytesToAddress([]byte("acc0")),
+					Received: hugeNumber,
+					Spent:    hugeNumber,
+					Exchange: "Binance",
 				},
 			},
 			wantErr: false,
@@ -56,10 +56,10 @@ func TestDB_PutAccount(t *testing.T) {
 			args: args{
 				tx: nil,
 				acc: Account{
-					Address:       common.BytesToAddress([]byte("qwerty")),
-					TotalReceived: hugeNumber,
-					TotalSpent:    hugeNumber,
-					Exchange:      "Binance",
+					Address:  common.BytesToAddress([]byte("qwerty")),
+					Received: hugeNumber,
+					Spent:    hugeNumber,
+					Exchange: "Binance",
 				},
 			},
 			wantErr: false,
@@ -146,10 +146,10 @@ func TestDB_HasAccount(t *testing.T) {
 			go func() {
 				tx, _ := db.BeginRw(context.Background())
 				db.PutAccount(tx, Account{
-					Address:       common.BytesToAddress([]byte("has account test0")),
-					TotalReceived: &big.Int{},
-					TotalSpent:    &big.Int{},
-					Exchange:      "",
+					Address:  common.BytesToAddress([]byte("has account test0")),
+					Received: &big.Int{},
+					Spent:    &big.Int{},
+					Exchange: "",
 				})
 				tx.Commit()
 				done <- true
@@ -256,16 +256,16 @@ func TestDB_AllAccountsMap(t *testing.T) {
 			args:   args{},
 			want: map[common.Address]Account{
 				{0xff}: {
-					Address:       common.Address{0xff},
-					TotalReceived: big.NewInt(0),
-					TotalSpent:    big.NewInt(0),
-					Exchange:      "",
+					Address:  common.Address{0xff},
+					Received: big.NewInt(0),
+					Spent:    big.NewInt(0),
+					Exchange: "",
 				},
 				{0xfe, 0xfe}: {
-					Address:       common.Address{0xfe, 0xfe},
-					TotalReceived: big.NewInt(0),
-					TotalSpent:    big.NewInt(0),
-					Exchange:      "",
+					Address:  common.Address{0xfe, 0xfe},
+					Received: big.NewInt(0),
+					Spent:    big.NewInt(0),
+					Exchange: "",
 				},
 			},
 			wantErr: false,
@@ -304,17 +304,17 @@ func accountsTestdata(db *DB) {
 	defer tx.Rollback()
 
 	db.PutAccount(tx, Account{
-		Address:       common.Address{0xff},
-		TotalReceived: big.NewInt(0),
-		TotalSpent:    big.NewInt(0),
-		Exchange:      "",
+		Address:  common.Address{0xff},
+		Received: big.NewInt(0),
+		Spent:    big.NewInt(0),
+		Exchange: "",
 	})
 
 	db.PutAccount(tx, Account{
-		Address:       common.Address{0xfe, 0xfe},
-		TotalReceived: big.NewInt(0),
-		TotalSpent:    big.NewInt(0),
-		Exchange:      "",
+		Address:  common.Address{0xfe, 0xfe},
+		Received: big.NewInt(0),
+		Spent:    big.NewInt(0),
+		Exchange: "",
 	})
 	if err := tx.Commit(); err != nil {
 		panic(err)

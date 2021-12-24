@@ -11,23 +11,26 @@ import (
 )
 
 type Account struct {
-	Address       common.Address
-	TotalReceived *big.Int
-	TotalSpent    *big.Int
-	Exchange      string
+	Address  common.Address
+	Balance  *big.Int
+	Received *big.Int
+	Spent    *big.Int
+	Exchange string
 }
 
 type _account struct {
-	TotalReceived []byte
-	TotalSpent    []byte
-	Exchange      string
+	Balance  []byte
+	Received []byte
+	Spent    []byte
+	Exchange string
 }
 
 func (db *DB) PutAccount(tx kv.RwTx, acc Account) error {
 	a := _account{
-		TotalReceived: acc.TotalReceived.Bytes(),
-		TotalSpent:    acc.TotalSpent.Bytes(),
-		Exchange:      acc.Exchange,
+		Balance:  acc.Balance.Bytes(),
+		Received: acc.Received.Bytes(),
+		Spent:    acc.Spent.Bytes(),
+		Exchange: acc.Exchange,
 	}
 
 	var accBuf bytes.Buffer
@@ -56,10 +59,11 @@ func (db *DB) PeekAccount(tx kv.Tx, address common.Address) (Account, error) {
 	}
 
 	return Account{
-		Address:       address,
-		TotalReceived: new(big.Int).SetBytes(a.TotalReceived),
-		TotalSpent:    new(big.Int).SetBytes(a.TotalSpent),
-		Exchange:      a.Exchange,
+		Address:  address,
+		Balance:  new(big.Int).SetBytes(a.Balance),
+		Received: new(big.Int).SetBytes(a.Received),
+		Spent:    new(big.Int).SetBytes(a.Spent),
+		Exchange: a.Exchange,
 	}, nil
 }
 
@@ -73,10 +77,11 @@ func (db *DB) AllAccounts(tx kv.Tx) ([]Account, error) {
 		}
 
 		acc := Account{
-			Address:       addr,
-			TotalReceived: new(big.Int).SetBytes(a.TotalReceived),
-			TotalSpent:    new(big.Int).SetBytes(a.TotalSpent),
-			Exchange:      a.Exchange,
+			Address:  addr,
+			Balance:  new(big.Int).SetBytes(a.Balance),
+			Received: new(big.Int).SetBytes(a.Received),
+			Spent:    new(big.Int).SetBytes(a.Spent),
+			Exchange: a.Exchange,
 		}
 		accounts = append(accounts, acc)
 		return nil
@@ -97,10 +102,11 @@ func (db *DB) AllAccountsMap(tx kv.Tx) (map[common.Address]Account, error) {
 		}
 
 		acc := Account{
-			Address:       addr,
-			TotalReceived: new(big.Int).SetBytes(a.TotalReceived),
-			TotalSpent:    new(big.Int).SetBytes(a.TotalSpent),
-			Exchange:      a.Exchange,
+			Address:  addr,
+			Balance:  new(big.Int).SetBytes(a.Balance),
+			Received: new(big.Int).SetBytes(a.Received),
+			Spent:    new(big.Int).SetBytes(a.Spent),
+			Exchange: a.Exchange,
 		}
 		accounts[addr] = acc
 		return nil

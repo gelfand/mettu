@@ -3,38 +3,37 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-	"os/signal"
 
-	"github.com/gelfand/mettu/repo"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"golang.org/x/net/context"
+	"github.com/gelfand/log"
+	"github.com/gelfand/mettu/cmd/website/internal/config"
+	"github.com/gelfand/mettu/cmd/website/internal/server"
 )
 
-var (
-	db *repo.DB
-
-	rpcAddr = "ws://127.0.0.1:8545"
-	creds   = map[string]string{
-		"Eugene": "9b1e8a94fcdb88c8391ec1200718b3ddd73fb631b9c6b5d56619852a47833665",
-		"Sats":   "75408122edc81988b92988054d2b4339f88e01d3efb7ec55cd275a558be71ac2",
-		"user1":  "0a041b9462caa4a31bac3567e0b6e6fd9100787db2ab433d96f6d178cabfce90",
-		"user2":  "6025d18fe48abd45168528f18a82e265dd98d421a7084aa09f61b341703901a3",
-		"user3":  "5860faf02b6bc6222ba5aca523560f0e364ccd8b67bee486fe8bf7c01d492ccb",
-		"user4":  "5269ef980de47819ba3d14340f4665262c41e933dc92c1a27dd5d01b047ac80e",
-		"user5":  "5a39bead318f306939acb1d016647be2e38c6501c58367fdb3e9f52542aa2442",
-	}
+const (
+	serverAddr = "0.0.0.0:443"
+	rpcAddr    = "ws://127.0.0.1:8545"
 )
 
-var homedir, _ = os.UserHomeDir()
+var creds = map[string]string{
+	"test":   "test",
+	"Eugene": "9b1e8a94fcdb88c8391ec1200718b3ddd73fb631b9c6b5d56619852a47833665",
+	"Sats":   "75408122edc81988b92988054d2b4339f88e01d3efb7ec55cd275a558be71ac2",
+	"user1":  "0a041b9462caa4a31bac3567e0b6e6fd9100787db2ab433d96f6d178cabfce90",
+	"user2":  "6025d18fe48abd45168528f18a82e265dd98d421a7084aa09f61b341703901a3",
+	"user3":  "5860faf02b6bc6222ba5aca523560f0e364ccd8b67bee486fe8bf7c01d492ccb",
+	"user4":  "5269ef980de47819ba3d14340f4665262c41e933dc92c1a27dd5d01b047ac80e",
+	"user5":  "5a39bead318f306939acb1d016647be2e38c6501c58367fdb3e9f52542aa2442",
+}
 
 var (
-	datadir = flag.String("datadir", homedir+"/.mettu", "path to the database.")
-	cert    = flag.String("cert", homedir+"/.x509/cert.pem", "path to the certificate.")
-	certkey = flag.String("key", homedir+"/.x509/key.pem", "path to the certificate key.")
+	homedir, _ = os.UserHomeDir()
+
+	datadirFlag = flag.String("datadir", homedir+"/.mettu", "path to the database.")
+	certFlag    = flag.String("cert", homedir+"/.x509/cert.pem", "path to the certificate.")
+	certkeyFlag = flag.String("key", homedir+"/.x509/key.pem", "path to the certificate key.")
+	addrFlag    = flag.String("addr", serverAddr, "server address.")
 )
 
 func usage() {
@@ -46,48 +45,65 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	go func() {
-		<-ctx.Done()
-		os.Exit(0)
-	}()
-	defer cancel()
-
-	var err error
-	db, err = repo.NewDB(*datadir)
+	cfg := &config.Config{
+		Addr:    "127.0.0.1:8080",
+		RPCAddr: rpcAddr,
+		DBPath:  *datadirFlag,
+	}
+	server, err := server.NewServer(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	server.Install()
+	server.ListenAndServeTLS("127.0.0.1:4444", *certFlag, *certkeyFlag)
 
-	go runCaching(ctx, db)
+	// ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	// go func() {
+	// 	<-ctx.Done()
+	// 	os.Exit(0)
+	// }()
+	// defer cancel()
 
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.CleanPath)
-	r.Use(middleware.NoCache)
-	r.Use(middleware.BasicAuth("Alpha Leak", creds))
+	// c, err := newCrawler(context.Background(), nil)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// go c.run(ctx)
+	// mux := chi.NewMux()
+	// mux.Route("/patterns", func(r chi.Router) {
+	// })
 
-	r.Mount("/static/css/", http.StripPrefix("/static/css/", http.FileServer(http.Dir("static/css"))))
-	r.Mount("/static/js/", http.StripPrefix("/static/js/", http.FileServer(http.Dir("static/js"))))
+	// listAccounts := func(w http.ResponseWriter, r *http.Request) {
+	// 	accs, ok := c.Accounts()
+	// 	if !ok {
+	// 		w.Write([]byte("Not ready yet..."))
+	// 	}
 
-	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
-		f, err := os.Open("./static/index.html")
-		log.Fatalf("Unable to read index html template: %v", err)
+	// 	if err := accountsTemplate.Execute(w, accs); err != nil {
+	// 		panic(err)
+	// 	}
+	// }
 
-		buf := make([]byte, 8192)
-		n, _ := f.Read(buf)
-		w.Write(buf[:n])
+	// mux.Route("/accounts", func(r chi.Router) {
+	// 	r.Get("/", listAccounts)
+	// })
+
+	// // r.Get("/swaps", swapsHandler)
+	// // r.Get("/patterns", patternsHandler)
+	// // r.Get("/tokens", tokensHandler)
+	// // r.Get("/wallets", walletsHandler)
+
+	// server := &http.Server{
+	// 	Addr:    *addr,
+	// 	Handler: mux,
+	// }
+	// log.Fatal(server.ListenAndServeTLS(*cert, *certkey))
+}
+
+func paginate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// just a stub.. some ideas are to look at URL query params for something like
+		// the page number, or the limit, and send a query cursor down the chain
+		next.ServeHTTP(w, r)
 	})
-	r.Get("/exchanges", exchangesHandler)
-	r.Get("/swaps", swapsHandler)
-	r.Get("/patterns", patternsHandler)
-	r.Get("/tokens", tokensHandler)
-	r.Get("/wallets", walletsHandler)
-
-	server := &http.Server{
-		Addr:    "0.0.0.0:433",
-		Handler: r,
-	}
-	log.Fatal(server.ListenAndServeTLS(*cert, *certkey))
 }

@@ -4,12 +4,12 @@ go 1.17
 
 require (
 	github.com/ethereum/go-ethereum v1.10.14
+	github.com/gelfand/log v0.0.0-20211224165732-100e98773481
 	github.com/go-chi/chi/v5 v5.0.7
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.5
 	github.com/jackc/pgx/v4 v4.14.1
 	github.com/ledgerwatch/erigon-lib v0.0.0-20211222073434-bf21599d2322
 	github.com/ugorji/go/codec v1.2.6
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 )
 
 require (
@@ -46,3 +46,5 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
+
+replace github.com/gelfand/log => ../log
